@@ -57,7 +57,6 @@ function stringToBytes(str) {
 var FNVPRIME = 0x01000193;
 var FNVINIT = 0x811c9dc5;
 
-//XXX: This function overflows MAXINT frequently, so you will get negative values.
 function fnv1s(str) {
   var bytes = stringToBytes(str);
   var hash = FNVINIT;
