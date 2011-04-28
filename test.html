@@ -79,6 +79,10 @@ function bloom(s) {
 
   $("#bit[i='" + a + "']").attr("class", "active");
   $("#bit[i='" + b + "']").attr("class", "active");
+
+  var p = Math.round(($(".set, .active").length / nboxes) * 100);
+  console.log("p: ", p);
+  $("#false_pos_prob").html(p + "%")
 }
 
 function testMembership(evt) {
@@ -124,6 +128,9 @@ Enter a string: <input id="text"><input type="submit" id="hash" value="add to bl
 <div id="hashes">
   fnv: <span id="fnv"></span><br>
   murmur: <span id="murmur"></span>
+</div>
+<div>
+Probability of a false positive: <span id="false_pos_prob">0%</span>
 </div>
 <table id="bitvector" border=1 cellpadding=0 cellspacing=0>
   <tr id="bits"></tr>
