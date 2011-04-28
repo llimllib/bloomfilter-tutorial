@@ -65,7 +65,6 @@ function fnv1s(str) {
     hash *= FNVPRIME;
     hash ^= bytes[i];
   }
-  //TODO: use a bigint implementation instead of just hacking?
   return Math.abs(hash);
 }
 
