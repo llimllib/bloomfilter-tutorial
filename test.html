@@ -80,8 +80,7 @@ function bloom(s) {
   $("#bit[i='" + a + "']").attr("class", "active");
   $("#bit[i='" + b + "']").attr("class", "active");
 
-  var p = Math.round(($(".set, .active").length / nboxes) * 100);
-  console.log("p: ", p);
+  var p = Math.round((Math.pow($(".set, .active").length / nboxes, 2)) * 100);
   $("#false_pos_prob").html(p + "%")
 }
 
