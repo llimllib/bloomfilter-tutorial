@@ -1,0 +1,144 @@
+<html><head><title>Let's test some hash functions</title>
+<style type="text/css">
+table#bitvector {
+	border-width: 1px;
+	border-spacing: 0px;
+	border-style: none;
+	border-color: rgb(51, 51, 51);
+	border-collapse: collapse;
+	background-color: white;
+}
+table#bitvector th {
+	border-width: 1px;
+	padding: 1px;
+	border-style: solid;
+	border-color: rgb(221, 221, 221);
+	background-color: white;
+	-moz-border-radius: ;
+}
+table#bitvector td {
+	border-width: 1px;
+	padding: 1px;
+	border-style: solid;
+	border-color: rgb(221, 221, 221);
+	background-color: white;
+	-moz-border-radius: ;
+}
+.active {
+  background-color: green !important;
+}
+.set {
+  background-color: black !important;
+}
+</style>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.5.2/jquery.min.js"></script>
+<script src="murmurhash.js"></script>
+<script>
+//thanks Borgar!
+//http://stackoverflow.com/questions/1240408/reading-bytes-from-a-javascript-string/1242596#1242596
+function stringToBytes(str) {
+  var ch, st, re = [];
+  for (var i = 0; i < str.length; i++) {
+    ch = str.charCodeAt(i);  // get char 
+    st = [];                 // set up "stack"
+    do {
+      st.push( ch & 0xFF );  // push byte to stack
+      ch = ch >> 8;          // shift value down by 1 byte
+    }  
+    while ( ch );
+    // add stack contents to result
+    // done because chars have "wrong" endianness
+    re = re.concat( st.reverse() );
+  }
+ // return an array of bytes
+  return re;
+}
+
+var FNVPRIME = 0x01000193;
+var FNVINIT = 0x811c9dc5;
+
+function fnv1s(str) {
+  var bytes = stringToBytes(str);
+  var hash = FNVINIT;
+  for (var i=0; i < bytes.length; i++) {
+    hash *= FNVPRIME;
+    hash ^= bytes[i];
+  }
+  return Math.abs(hash);
+}
+
+nboxes = 15;
+
+function bloom(s) {
+  $(".active").attr("class", "set");
+
+  var a = fnv1s(s) % nboxes;
+  var b = murmur(s) % nboxes;
+
+  $("#bit[i='" + a + "']").attr("class", "active");
+  $("#bit[i='" + b + "']").attr("class", "active");
+
+  //the probability of a false positive is the number of 1s in the bit vector
+  //divided by the number of bits in the vector to the power of k, the number
+  //of index functions you're using
+  var p = Math.round((Math.pow($(".set, .active").length / nboxes, 2)) * 100);
+  $("#false_pos_prob").html(p + "%")
+}
+
+function testMembership(evt) {
+  //clear out "active" cells
+  $(".active").attr("class", "set");
+
+  var s = $("#membership").val();
+
+  var a = fnv1s(s) % nboxes;
+  var b = murmur(s) % nboxes;
+
+  if ($("#bit[i='" + a + "']").attr("class") == "set" &&
+      $("#bit[i='" + b + "']").attr("class") == "set") {
+    $("#ismember").html("maybe!");
+  } else {
+    $("#ismember").html("no");
+  }
+
+  $("#memfnv").html(a)
+  $("#memmurmur").html(b)
+}
+
+$(function() {
+  //add the table cells which represent our bloom filter bit array
+  for (var i=0; i<nboxes; i++) {
+    $("#bits").append('<td id="bit" i="' + i + '" width=20>&nbsp;</td>');
+    $("#labels").append('<td id="label" i="' + i + '" align="center">' + i + '</td>');
+  }
+
+  //handle a click on the "add to bloom filter" button
+  $("#hash").click(function() {
+    var s = $("#text").val();
+    $("#fnv").html(fnv1s(s) % nboxes)
+    $("#murmur").html(murmur(s) % nboxes)
+    bloom(s);
+  });
+
+  $("#membership").keyup(testMembership);
+});
+</script>
+</head><body>
+Enter a string: <input id="text"><input type="submit" id="hash" value="add to bloom filter">
+<div id="hashes">
+  fnv: <span id="fnv"></span><br>
+  murmur: <span id="murmur"></span>
+</div>
+<div>
+Probability of a false positive: <span id="false_pos_prob">0%</span>
+</div>
+<table id="bitvector" border=1 cellpadding=0 cellspacing=0>
+  <tr id="bits"></tr>
+  <tr id="labels"></tr>
+</table>
+Test for membership: <input id="membership"><span id="ismember"></span>
+<div id="memhashes">
+  fnv: <span id="memfnv"></span><br>
+  murmur: <span id="memmurmur"></span>
+</div>
+</body></html>
