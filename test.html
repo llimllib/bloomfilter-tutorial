@@ -87,8 +87,6 @@ function testMembership(evt) {
 
   var s = $("#membership").val();
 
-  console.log("keydown", s);
-
   var a = fnv1s(s) % nboxes;
   var b = murmur(s) % nboxes;
 
