@@ -59,8 +59,8 @@ var FNVINIT = 0x811c9dc5;
 
 //XXX: This function overflows MAXINT frequently, so you will get negative values.
 function fnv1s(str) {
-  bytes = stringToBytes(str);
-  hash = FNVINIT;
+  var bytes = stringToBytes(str);
+  var hash = FNVINIT;
   for (var i=0; i < bytes.length; i++) {
     hash *= FNVPRIME;
     hash ^= bytes[i];
@@ -74,28 +74,55 @@ nboxes = 15;
 function bloom(s) {
   $(".active").attr("class", "set");
 
-  a = fnv1s(s) % nboxes;
-  b = murmur(s) % nboxes;
+  var a = fnv1s(s) % nboxes;
+  var b = murmur(s) % nboxes;
 
   $("#bit[i='" + a + "']").attr("class", "active");
   $("#bit[i='" + b + "']").attr("class", "active");
 }
 
+function testMembership(evt) {
+  //clear out "active" cells
+  $(".active").attr("class", "set");
+
+  var s = $("#membership").val();
+
+  console.log("keydown", s);
+
+  var a = fnv1s(s) % nboxes;
+  var b = murmur(s) % nboxes;
+
+  if ($("#bit[i='" + a + "']").attr("class") == "set" &&
+      $("#bit[i='" + b + "']").attr("class") == "set") {
+    $("#ismember").html("yes");
+  } else {
+    $("#ismember").html("no");
+  }
+
+  $("#memfnv").html(a)
+  $("#memmurmur").html(b)
+}
+
 $(function() {
+  //add the table cells which represent our bloom filter bit array
   for (var i=0; i<nboxes; i++) {
     $("#bits").append('<td id="bit" i="' + i + '" width=20>&nbsp;</td>');
     $("#labels").append('<td id="label" i="' + i + '" align="center">' + i + '</td>');
   }
+
+  //handle a click on the "add to bloom filter" button
   $("#hash").click(function() {
     var s = $("#text").val();
-    $("#fnv").html(Math.abs(fnv1s(s)) % nboxes)
+    $("#fnv").html(fnv1s(s) % nboxes)
     $("#murmur").html(murmur(s) % nboxes)
     bloom(s);
   });
+
+  $("#membership").keyup(testMembership);
 });
 </script>
 </head><body>
-Enter a string: <input id="text"><input type="submit" id="hash">
+Enter a string: <input id="text"><input type="submit" id="hash" value="add to bloom filter">
 <div id="hashes">
   fnv: <span id="fnv"></span><br>
   murmur: <span id="murmur"></span>
@@ -104,4 +131,9 @@ Enter a string: <input id="text"><input type="submit" id="hash">
   <tr id="bits"></tr>
   <tr id="labels"></tr>
 </table>
+Test for membership: <input id="membership"><span id="ismember"></span>
+<div id="memhashes">
+  fnv: <span id="memfnv"></span><br>
+  murmur: <span id="memmurmur"></span>
+</div>
 </body></html>
