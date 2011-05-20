@@ -1,4 +1,4 @@
-<html><head><title>Let's test some hash functions</title>
+<html><head><title>Bloom Filter Tutorial</title>
 <style type="text/css">
 table#bitvector {
 	border-width: 1px;
@@ -7,6 +7,8 @@ table#bitvector {
 	border-color: rgb(51, 51, 51);
 	border-collapse: collapse;
 	background-color: white;
+    margin: auto;
+    margin-top: 10px;
 }
 table#bitvector th {
 	border-width: 1px;
@@ -25,17 +27,77 @@ table#bitvector td {
 	-moz-border-radius: ;
 }
 .active {
-  background-color: green !important;
+    background-color: green !important;
 }
 .set {
-  background-color: black !important;
+    background-color: black !important;
+}
+#content {
+    width: 650 px;
+    margin: auto;
+    background-color: #fff;
+    padding: 20px;
+    -webkit-border-radius: 10px;
+    -moz-border-radius: 10px;
+    border-radius: 10px;
+}
+body {
+    background-color: #effaee;
+    background-color: #d3ddb4;
+}
+#addstring {
+    width: 400px;
+    margin: auto;
+    background-color: #f1f1ce;
+    padding: 10px;
+    -webkit-border-radius: 10px;
+    -moz-border-radius: 10px;
+    border-radius: 10px;
+}
+#testmembership {
+    width: 400px;
+    margin: auto;
+    background-color: #f1f1ce;
+    padding: 10px;
+    -webkit-border-radius: 10px;
+    -moz-border-radius: 10px;
+    border-radius: 10px;
+}
+#ismember {
 }
 </style>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.5.2/jquery.min.js"></script>
 <script src="murmurhash.js"></script>
 <script>
-//thanks Borgar!
-//http://stackoverflow.com/questions/1240408/reading-bytes-from-a-javascript-string/1242596#1242596
+// The Jenkins 96 bit mix function:
+// http://www.concentric.net/~Ttwang/tech/inthash.htm
+// stolen from Google Chromium's bloom filter
+// http://www.google.com/codesearch/p#OAMlx_jo-ck/src/chrome/browser/safe_browsing/bloom_filter.cc&exact_package=chromium
+// thanks dudes!
+var seed1 = Math.floor(Math.random() * 2e32);
+var seed2 = Math.floor(Math.random() * 2e32);
+function hashMix(hash_key) {
+  var a = seed1;
+  var b = seed2;
+  var c = hash_key;
+  console.log(a, b, c);
+
+  a -= (b + c);  a ^= (c >> 13);
+  b -= (c + a);  b ^= (a << 8);
+  c -= (a + b);  c ^= (b >> 13);
+  a -= (b + c);  a ^= (c >> 12);
+  b -= (c + a);  b ^= (a << 16);
+  c -= (a + b);  c ^= (b >> 5);
+  a -= (b + c);  a ^= (c >> 3);
+  b -= (c + a);  b ^= (a << 10);
+  c -= (a + b);  c ^= (b >> 15);
+  
+  //XXX: can this even be negative? It was designed to run with uints. Javascript is dumb.
+  return Math.abs(c);
+}
+
+// thanks Borgar!
+// http://stackoverflow.com/questions/1240408/reading-bytes-from-a-javascript-string/1242596#1242596
 function stringToBytes(str) {
   var ch, st, re = [];
   for (var i = 0; i < str.length; i++) {
@@ -68,9 +130,16 @@ function fnv1s(str) {
 }
 
 nboxes = 15;
+strings = [];
 
 function bloom(s) {
   $(".active").attr("class", "set");
+
+  strings.push(s);
+  $("#yourset").html(strings.join(", "));
+
+  //clear the text input box
+  $("#addtoset").val("");
 
   var a = fnv1s(s) % nboxes;
   var b = murmur(s) % nboxes;
@@ -82,7 +151,7 @@ function bloom(s) {
   //divided by the number of bits in the vector to the power of k, the number
   //of index functions you're using
   var p = Math.round((Math.pow($(".set, .active").length / nboxes, 2)) * 100);
-  $("#false_pos_prob").html(p + "%")
+  $("#false_pos_prob").html(p + "%");
 }
 
 function testMembership(evt) {
@@ -114,7 +183,7 @@ $(function() {
 
   //handle a click on the "add to bloom filter" button
   $("#hash").click(function() {
-    var s = $("#text").val();
+    var s = $("#addtoset").val();
     $("#fnv").html(fnv1s(s) % nboxes)
     $("#murmur").html(murmur(s) % nboxes)
     bloom(s);
@@ -124,21 +193,51 @@ $(function() {
 });
 </script>
 </head><body>
-Enter a string: <input id="text"><input type="submit" id="hash" value="add to bloom filter">
-<div id="hashes">
-  fnv: <span id="fnv"></span><br>
-  murmur: <span id="murmur"></span>
-</div>
-<div>
-Probability of a false positive: <span id="false_pos_prob">0%</span>
-</div>
-<table id="bitvector" border=1 cellpadding=0 cellspacing=0>
-  <tr id="bits"></tr>
-  <tr id="labels"></tr>
-</table>
-Test for membership: <input id="membership"><span id="ismember"></span>
-<div id="memhashes">
-  fnv: <span id="memfnv"></span><br>
-  murmur: <span id="memmurmur"></span>
+<div id="content">
+    <p>A Bloom filter is a data structure designed to tell you, rapidly and memory-efficiently, whether an element is present in some set of elements.
+
+    <p>The price we pay for this efficency is that a Bloom filter is a <strong>probabalistic data structure</strong>; it tells us that the element is <em>definitely not</em> in the set or <em>maybe is</em> in the set.
+
+    <p>The base data structure of a Bloom filter is a <strong>Bit Vector</strong>. Here's a small one we'll use to demonstrate:
+
+    <table id="bitvector" border=1 cellpadding=0 cellspacing=0>
+      <tr id="bits"></tr>
+      <tr id="labels"></tr>
+    </table>
+
+    <p>Each empty cell in that table represents a bit, and the number below it its index. To add an element to the Bloom filter, we simply hash it a few times and set the bits in the bit vector at the index of those hashes to 1.
+
+    <p>It's easier to see that that means than explain it, so enter some strings and see how the bit vector changes:
+
+    <div id="addstring">
+        <p>Enter a string: <input id="addtoset"><input type="submit" id="hash" value="add to bloom filter">
+
+        <div id="hashes">
+          fnv: <span id="fnv"></span><br>
+          murmur: <span id="murmur"></span>
+        </div>
+
+        <p>Your set: [<span id="yourset"></span>]
+    </div>
+
+    <p>When you add a string, you can see that the bits at the index given by the hashes are set to 1. I've used the color green to show the newly added ones, but any colored cell is simply a 1.
+
+    <p>To test for membership, you simply hash the string with the same hash functions, then see if those values are set in the bit vector. If they aren't, you know that the element isn't in the set. If they are, you only know that it <em>might</em> be, because another element or some combination of other elements could have set the same bits. Again, let's demonstrate:
+
+    <div id="testmembership">
+        <p>Test an element for membership: <input id="membership">
+        <div id="memhashes">
+          fnv: <span id="memfnv"></span><br>
+          murmur: <span id="memmurmur"></span>
+        </div>
+
+        <p>Is the element in the set? <span id="ismember">no</span>
+    </div>
+
+    <p>And that's the basics of a bloom filter!
+
+    <h1>Advanced Topics</h1>
+
+    <p>Probability of a false positive: <span id="false_pos_prob">0%</span>
 </div>
 </body></html>
