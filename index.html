@@ -219,7 +219,7 @@ $(function() {
 
     <p>Each empty cell in that table represents a bit, and the number below it its index. To add an element to the Bloom filter, we simply hash it a few times and set the bits in the bit vector at the index of those hashes to 1.
 
-    <p>It's easier to see that that means than explain it, so enter some strings and see how the bit vector changes:
+    <p>It's easier to see that that means than explain it, so enter some strings and see how the bit vector changes. Fnv and Murmur are two simple hash functions:
 
     <div id="addstring" class="insetbox">
         <p>Enter a string: <input id="addtoset"><input type="submit" id="hash" value="add to bloom filter">
