@@ -288,7 +288,19 @@ $(function() {
 
     <h3>How many hash functions should I use?</h3>
 
-    <p><em>(m/n)ln(2)</em>, where <em>n</em> is the expected number of elements in the filter. Just trust the math<sup><a href="#footnote2">2</a>, <a href="#footnote3">3</a></sup>.
+    <p>The more hash functions you have, the slower your bloom filter, and the quicker it fills up. If you have too few, however, you may suffer too many false positives.
+
+    <p>Since you have to pick <em>k</em> when you create the filter, you'll have to ballpark what range you expect <em>n</em> to be in. Once you have that, you still have to choose a potential <em>m</em> (the number of bits) and <em>k</em> (the number of hash functions).
+
+    <p>It seems a difficult optimization problem, but fortunately, given an <em>m</em> and an <em>n</em>, we have a function to choose the optimal value of <em>k</em>: <em>(m/n)ln(2)</em>. <sup><a href="#footnote2">2</a>, <a href="#footnote3">3</a></sup>.
+
+    <p>So, to choose the size of a bloom filter, we:
+
+    <p><ol><li>Choose a ballpark value for <em>n</em>
+    <li>Choose a value for <em>m</em>
+    <li>Calculate the optimal value of <em>k</em>
+    <li>Calculate the error rate for our chosen values of <em>n</em>, <em>m</em>, and <em>k</em>. If it's unacceptable, return to step 2 and change m; otherwise we're done.
+    </ol>
 
     <h3>How fast and space efficient is a Bloom filter?</h3>
 
