@@ -85,7 +85,7 @@ function hashMix(hash_key) {
   a -= (b + c);  a ^= (c >> 3);
   b -= (c + a);  b ^= (a << 10);
   c -= (a + b);  c ^= (b >> 15);
-  
+
   //XXX: can this even be negative? It was designed to run with uints. Javascript is dumb.
   return Math.abs(c);
 }
@@ -95,12 +95,12 @@ function hashMix(hash_key) {
 function stringToBytes(str) {
   var ch, st, re = [];
   for (var i = 0; i < str.length; i++) {
-    ch = str.charCodeAt(i);  // get char 
+    ch = str.charCodeAt(i);  // get char
     st = [];                 // set up "stack"
     do {
       st.push( ch & 0xFF );  // push byte to stack
       ch = ch >> 8;          // shift value down by 1 byte
-    }  
+    }
     while ( ch );
     // add stack contents to result
     // done because chars have "wrong" endianness
@@ -183,6 +183,14 @@ $(function() {
     bloom(s);
   });
 
+  // handle enter key on "add to bloom filter" form
+  $('#addtoset').keydown(function (event) {
+    if (event.keyCode == '13') {
+     event.preventDefault();
+     $('#hash').click();
+    }
+  });
+
   $("#membership").keyup(testMembership);
 });
 </script>
@@ -219,7 +227,7 @@ $(function() {
 
     <p>Each empty cell in that table represents a bit, and the number below it its index. To add an element to the Bloom filter, we simply hash it a few times and set the bits in the bit vector at the index of those hashes to 1.
 
-    <p>It's easier to see that that means than explain it, so enter some strings and see how the bit vector changes. Fnv and Murmur are two simple hash functions:
+    <p>It's easier to see what that means than explain it, so enter some strings and see how the bit vector changes. Fnv and Murmur are two simple hash functions:
 
     <div id="addstring" class="insetbox">
         <p>Enter a string: <input id="addtoset"><input type="submit" id="hash" value="add to bloom filter">
@@ -275,7 +283,7 @@ $(function() {
     <p>It's a nice property of Bloom filters that you can modify the false positive rate of your filter. A larger filter will have less false positives, and a smaller one more.
 
     <p>Your false positive rate will be approximately <em>(1-e<sup>-kn/m</sup>)<sup>k</sup></em>, so you can just plug the number <em>n</em> of elements you expect to insert, and try various values of <em>k</em> and <em>m</em> to configure your filter for your application.<sup><a href="#footnote2">2</a></sup>
-    
+
     <p>This leads to an obvious question:
 
     <h3>How many hash functions should I use?</h3>
@@ -291,7 +299,7 @@ $(function() {
     <h3>References</h3>
 
     <p><a name="footnote1">1:</span> <a href="http://citeseer.ist.psu.edu/viewdoc/download;jsessionid=6CA79DD1A90B3EFD3D62ACE5523B99E7?doi=10.1.1.127.9672&rep=rep1&type=pdf">Network Applications of Bloom Filters: A Survey</a>, Broder and Mitzenmacher. An excellent overview.
-    <p><a name="footnote2">2:</span> <a href="http://en.wikipedia.org/wiki/Bloom_filter#Probability_of_false_positives">Wikipedia</a>, which has and excellent an comprehensive page on Bloom filters
+    <p><a name="footnote2">2:</span> <a href="http://en.wikipedia.org/wiki/Bloom_filter#Probability_of_false_positives">Wikipedia</a>, which has an excellent and comprehensive page on Bloom filters
     <p><a name="footnote3">3:</span> <a href="http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.152.579&rank=1">Less Hashing, Same Performance</a>, Kirsch and Mitzenmacher
     <p><a name="footnote4">4:</span> <a href="http://gsd.di.uminho.pt/members/cbm/ps/dbloom.pdf">Scalable Bloom Filters</a>, Almeida et al
 
