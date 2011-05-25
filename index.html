@@ -222,9 +222,9 @@ $(function() {
 <div id="content">
     <h1>Bloom Filters by Example</h1>
 
-    <p>A Bloom filter is a data structure designed to tell you, rapidly and memory-efficiently, whether an element is present in some set of elements.
+    <p>A Bloom filter is a data structure designed to tell you, rapidly and memory-efficiently, whether an element is present in a set.
 
-    <p>The price we pay for this efficency is that a Bloom filter is a <strong>probabalistic data structure</strong>; it tells us that the element is <em>definitely not</em> in the set or <em>maybe is</em> in the set.
+    <p>The price paid for this efficiency is that a Bloom filter is a <strong>probabilistic data structure</strong>: it tells us that the element either <em>definitely is not</em> in the set or <em>may be</em> in the set.
 
     <p>The base data structure of a Bloom filter is a <strong>Bit Vector</strong>. Here's a small one we'll use to demonstrate:
 
@@ -276,7 +276,7 @@ $(function() {
 
     <h3>Hash Functions</h3>
 
-    <p>The hash functions used in a Bloom filter should be <strong><a href="http://en.wiktionary.org/wiki/independent_function">independent</a></strong> and <strong><a href="http://en.wikipedia.org/wiki/Uniform_distribution_(discrete)">uniformly distributed</a></strong>. They should also be as fast as possible; thus cryptographic hashes such as sha1, though widely used, are not the best choice.
+    <p>The hash functions used in a Bloom filter should be <strong><a href="http://en.wiktionary.org/wiki/independent_function">independent</a></strong> and <strong><a href="http://en.wikipedia.org/wiki/Uniform_distribution_(discrete)">uniformly distributed</a></strong>. They should also be as fast as possible (cryptographic hashes such as sha1, though widely used therefore are not very good choices).
 
     <p>Examples of fast, simple hashes that are independent enough<sup><a href="#footnote3">3</a></sup> include <a href="https://sites.google.com/site/murmurhash/">murmur</a>, the <a href="http://isthe.com/chongo/tech/comp/fnv/">fnv</a> series of hashes, and <a href="http://www.google.com/codesearch/url?ct=ext&url=http://www.concentric.net/~Ttwang/tech/inthash.htm&usg=AFQjCNEBOwEAd_jb5vYSckmG7OxrkeQhLA">HashMix</a>.
 
