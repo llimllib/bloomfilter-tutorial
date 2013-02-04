@@ -285,6 +285,8 @@ $(function() {
     <p>To see the difference that a faster-than-cryptographic hash function can make, <a href="https://github.com/bitly/dablooms/pull/19">check out this story</a> of a ~800% speedup when switching a bloom filter implementation from md5 to murmur.
 
     <p>In a short survey of bloom filter implementations:
+    <li><a href="https://github.com/timtrueman/cassandra-bloom-filter/blob/master/src/main/java/org/apache/cassandra/utils/BloomFilter.java#L109">Cassandra</a> uses Murmur hashes
+    <li><a href="http://salsahpc.indiana.edu/tutorial/apps/hadoop-0.20.203.0/docs/api/org/apache/hadoop/util/hash/Hash.html">Hadoop</a> includes default implementations of Jenkins and Murmur hashes
     <li><a href="https://github.com/jaybaird/python-bloomfilter/blob/master/pybloom/pybloom.py">python-bloomfilter</a> uses cryptographic hashes
     <li><a href="http://google.com/codesearch/p?hl=en#n1QSs64cdFo/src/cmd/venti/srv/bloom.c&q=bloom%20filter&l=130">Plan9</a> uses a simple hash as proposed in <a href="http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.152.579&rank=1">Mitzenmacher 2005</a>
     <li><a href="https://github.com/sdroege/snippets/blob/master/snippets/bloomfilter.c">Sdroege Bloom filter</a> uses fnv1a (included just because I wanted to show one that uses fnv.)
