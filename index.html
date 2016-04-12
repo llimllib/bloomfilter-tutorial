@@ -294,6 +294,12 @@ $(function() {
     <li><a href="http://google.com/codesearch/p?hl=en#GUxBL_cNJpE/src/store_key_md5.c&q=bloom%20package:squid&d=1">Squid</a> uses MD5
     </ul>
 
+    <h3>Double Hashing</h3>
+
+    Note that you don't have to choose two or more different hash functions. Instead, you can create any amount of new hash functions by <a href="https://en.wikipedia.org/wiki/Double_hashing">Double Hashing</a><a href="#footnote5">5</a> two functions. Given two independent hash functions <em>hash<sub>a</sub></em> and <em>hash<sub>b</sub></em>, and a value <em>x</em> to be hashed, you can create a new hash function <em>hash<sub>i</sub></em> with
+
+    <p><em>hash<sub>i</sub>(x, m) = (hash<sub>a</sub>(x) + i × hash<sub>b</sub>(x)) mod m</em>
+
     <h3>How big should I make my Bloom filter?</h3>
 
     <p>It's a nice property of Bloom filters that you can modify the false positive rate of your filter. A larger filter will have less false positives, and a smaller one more.
@@ -334,6 +340,7 @@ $(function() {
     <p><a name="footnote2">2:</span> <a href="http://en.wikipedia.org/wiki/Bloom_filter#Probability_of_false_positives">Wikipedia</a>, which has an excellent and comprehensive page on Bloom filters
     <p><a name="footnote3">3:</span> <a href="http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.152.579&rank=1">Less Hashing, Same Performance</a>, Kirsch and Mitzenmacher
     <p><a name="footnote4">4:</span> <a href="http://gsd.di.uminho.pt/members/cbm/ps/dbloom.pdf">Scalable Bloom Filters</a>, Almeida et al
+    <p><a name="footnote5">5:</span> <a href="http://blog.michaelschmatz.com/2016/04/11/how-to-write-a-bloom-filter-cpp/">How To Write a Bloom Filter in C++</a>, Michael Schmatz
 
 </div>
 </body></html>
