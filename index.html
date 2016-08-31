@@ -283,6 +283,8 @@ $(function() {
 
     <p>Examples of fast, simple hashes that are independent enough<sup><a href="#footnote3">3</a></sup> include <a href="https://sites.google.com/site/murmurhash/">murmur</a>, the <a href="http://isthe.com/chongo/tech/comp/fnv/">fnv</a> series of hashes, and <a href="http://www.burtleburtle.net/bob/hash/doobs.html">Jenkins Hashes</a>.
 
+    <p><em>Update Aug 31 2016:</em> Murmur <a href="https://emboss.github.io/blog/2012/12/14/breaking-murmur-hash-flooding-dos-reloaded/">seems to be broken</a>. You should probably prefer <a href="https://www.131002.net/siphash/">SipHash</a>.
+
     <p>To see the difference that a faster-than-cryptographic hash function can make, <a href="https://github.com/bitly/dablooms/pull/19">check out this story</a> of a ~800% speedup when switching a bloom filter implementation from md5 to murmur.
 
     <p>In a short survey of bloom filter implementations:
