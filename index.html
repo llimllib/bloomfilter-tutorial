@@ -222,11 +222,11 @@ $(function() {
 <div id="content">
     <h1>Bloom Filters by Example</h1>
 
-    <p>A Bloom filter is a data structure designed to tell you, rapidly and memory-efficiently, whether an element is present in a set.
+    <p> Bloom filter 是一个数据结构，它可以用来判断某个元素是否在集合内，具有运行快速，内存占用小的特点。
 
-    <p>The price paid for this efficiency is that a Bloom filter is a <strong>probabilistic data structure</strong>: it tells us that the element either <em>definitely is not</em> in the set or <em>may be</em> in the set.
+    <p> 而高效插入和查询的代价就是 Bloom Filter 是一个<strong>概率数据结构</strong>: 它可以告诉我们一个元素 <em>绝对不</em>在集合内或者 <em>可能</em> 在集合内
 
-    <p>The base data structure of a Bloom filter is a <strong>Bit Vector</strong>. Here's a small one we'll use to demonstrate:
+    <p> Bloom filter 的基础数据结构是一个 <strong>比特向量</strong>。 下面是一个简单的示例:
 
     <div class="insetbox">
         <table id="bitvector" border=1 cellpadding=0 cellspacing=0>
@@ -235,96 +235,95 @@ $(function() {
         </table>
     </div>
 
-    <p>Each empty cell in that table represents a bit, and the number below it its index. To add an element to the Bloom filter, we simply hash it a few times and set the bits in the bit vector at the index of those hashes to 1.
+    <p>表中的每一个空格表示一个比特, 空格下面的数字表示它的索引. 只需要简单的对输入进行多次哈希操作，并把对应于其结果的比特置为1，就可以想 Bloom filter 添加一个元素。
 
-    <p>It's easier to see what that means than explain it, so enter some strings and see how the bit vector changes. Fnv and Murmur are two simple hash functions:
-
+    <p>相较于解释，直观的看到它的变化总是更利于我们加深理解的, 所以输入一些字符串然后观察比特向量的变化。Fnv 和 Murmur 是两个简单的哈希函数：
     <div id="addstring" class="insetbox">
-        <p>Enter a string: <input id="addtoset"><input type="submit" id="hash" value="add to bloom filter">
+        <p>输入一个字符串: <input id="addtoset"><input type="submit" id="hash" value="add to bloom filter">
 
         <div id="hashes">
           fnv: <span id="fnv"></span><br>
           murmur: <span id="murmur"></span>
         </div>
 
-        <p>Your set: [<span id="yourset"></span>]
+        <p>你的集合: [<span id="yourset"></span>]
     </div>
 
-    <p>When you add a string, you can see that the bits at the index given by the hashes are set to 1. I've used the color green to show the newly added ones, but any colored cell is simply a 1.
+    <p>当你往集合里添加一个字符串的时候, 你可以检查应用对应哈希函数的位置是否为1。这里我用了绿色表示最新添加的元素对应位置,但是实际上你需要知道，表格里的所有值均为1。
 
-    <p>To test for membership, you simply hash the string with the same hash functions, then see if those values are set in the bit vector. If they aren't, you know that the element isn't in the set. If they are, you only know that it <em>might</em> be, because another element or some combination of other elements could have set the same bits. Again, let's demonstrate:
+    <p>你可以简单的通过对字符串应用同样的哈希函数 ，然后看比特向量里对应的位置是否为1。如果是，你只知道元素 <em>可能</em> 在里面, 因为这些对应位置有可能恰巧是由其他元素或者其他元素的组合所引起的。
 
     <div id="testmembership" class="insetbox">
-        <p>Test an element for membership: <input id="membership">
+        <p>测试: <input id="membership">
         <div id="memhashes">
             fnv: <span id="memfnv"></span><br>
             murmur: <span id="memmurmur"></span>
         </div>
 
-        <p>Is the element in the set? <span id="ismember">no</span>
+        <p>这个元素在集合中吗？<span id="ismember">no</span>
 
-        <p>Probability of a false positive: <span id="false_pos_prob">0%</span>
+        <p>误判的概率: <span id="false_pos_prob">0%</span>
     </div>
 
-    <p>And that's the basics of a bloom filter!
+    <p>这些就是 Bloom filter 全部的基础内容了。
 
-    <h2>Advanced Topics</h2>
+    <h2>高级话题</h2>
 
-    <p>Before I write a bit more about Bloom filters, a disclaimer: I've never used them in production. Don't take my word for it. All I intend to do is give you general ideas and pointers to where you can find out more.
+    <p>在写下更过关于 Bloom filter 的内容之间，我需要声明一点：我从未在生产环境使用过 Bloom filter。所以不要不假思索的相信下面的内容。我想做的只是给你一个概括式的介绍同时指明你可以去哪里寻找更多内容。
 
-    <p>In the following text, we will refer to a Bloom filter with <em>k</em> hashes, <em>m</em> bits in the filter, and <em>n</em> elements that have been inserted.
+    <p>在下面的内容里, 我们假设在 Bloom filter 里面有 <em>k</em> 个哈希函数, <em>m</em> 个比特, 以及 <em>n</em> 个已插入元素。
 
-    <h3>Hash Functions</h3>
+    <h3>哈希函数</h3>
 
-    <p>The hash functions used in a Bloom filter should be <strong><a href="http://en.wiktionary.org/wiki/independent_function">independent</a></strong> and <strong><a href="http://en.wikipedia.org/wiki/Uniform_distribution_(discrete)">uniformly distributed</a></strong>. They should also be as fast as possible (cryptographic hashes such as sha1, though widely used therefore are not very good choices).
+    <p>Bloom filter 里的哈希函数需要是 <strong><a href="http://en.wiktionary.org/wiki/independent_function">彼此独立</a></strong> 且 <strong><a href="http://en.wikipedia.org/wiki/Uniform_distribution_(discrete)">均匀分布的</a></strong>。同时，它们也需要尽可能的快 (尽管 sha1 之类的加密哈希算法被广泛应用，但是在这一点的基础上并不是一个很好的选择).
 
-    <p>Examples of fast, simple hashes that are independent enough<sup><a href="#footnote3">3</a></sup> include <a href="https://sites.google.com/site/murmurhash/">murmur</a>, the <a href="http://isthe.com/chongo/tech/comp/fnv/">fnv</a> series of hashes, and <a href="http://www.google.com/codesearch/url?ct=ext&url=http://www.concentric.net/~Ttwang/tech/inthash.htm&usg=AFQjCNEBOwEAd_jb5vYSckmG7OxrkeQhLA">HashMix</a>.
+    <p>快速，简单且彼此独立的哈希函数的例子 <sup><a href="#footnote3">3</a></sup> 包括 <a href="https://sites.google.com/site/murmurhash/">murmur</a>,  <a href="http://isthe.com/chongo/tech/comp/fnv/">fnv</a> 族哈希函数, 以及 <a href="http://www.google.com/codesearch/url?ct=ext&url=http://www.concentric.net/~Ttwang/tech/inthash.htm&usg=AFQjCNEBOwEAd_jb5vYSckmG7OxrkeQhLA">HashMix</a>.
 
-    <p>To see the difference that a faster-than-cryptographic hash function can make, <a href="https://github.com/bitly/dablooms/pull/19">check out this story</a> of a ~800% speedup when switching a bloom filter implementation from md5 to murmur.
+    <p>如果你希望了解一个比加密哈希函数快的哈希函数可以达到什么程度，可以参考<a href="https://github.com/bitly/dablooms/pull/19">这个故事</a> 当把 bloom filter 的实现从 md5 切换到 murmur 时，速度提升了 800%。
 
-    <p>In a short survey of bloom filter implementations:
-    <ul><li><a href="http://www.google.com/codesearch/p?hl=en#OAMlx_jo-ck/src/chrome/browser/safe_browsing/bloom_filter.cc&q=bloom&exact_package=chromium&d=4">Chromium</a> uses <a href="http://www.google.com/codesearch/url?ct=ext&url=http://www.concentric.net/~Ttwang/tech/inthash.htm&usg=AFQjCNEBOwEAd_jb5vYSckmG7OxrkeQhLA">HashMix</a>. (also, <a href="http://blog.alexyakunin.com/2010/03/nice-bloom-filter-application.html">here's</a> a short description of how they use bloom filters)
-    <li><a href="https://github.com/jaybaird/python-bloomfilter/blob/master/pybloom/pybloom.py">python-bloomfilter</a> uses cryptographic hashes
-    <li><a href="http://google.com/codesearch/p?hl=en#n1QSs64cdFo/src/cmd/venti/srv/bloom.c&q=bloom%20filter&l=130">Plan9</a> uses a simple hash as proposed in <a href="http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.152.579&rank=1">Mitzenmacher 2005</a>
-    <li><a href="https://github.com/sdroege/snippets/blob/master/snippets/bloomfilter.c">Sdroege Bloom filter</a> uses fnv1a (included just because I wanted to show one that uses fnv.)
-    <li><a href="http://google.com/codesearch/p?hl=en#GUxBL_cNJpE/src/store_key_md5.c&q=bloom%20package:squid&d=1">Squid</a> uses MD5
+    <p>一个关于 Bloom filter 实现方式的简单调查:
+    <ul><li><a href="http://www.google.com/codesearch/p?hl=en#OAMlx_jo-ck/src/chrome/browser/safe_browsing/bloom_filter.cc&q=bloom&exact_package=chromium&d=4">Chromium</a> 使用 <a href="http://www.google.com/codesearch/url?ct=ext&url=http://www.concentric.net/~Ttwang/tech/inthash.htm&usg=AFQjCNEBOwEAd_jb5vYSckmG7OxrkeQhLA">HashMix</a>. (同时, <a href="http://blog.alexyakunin.com/2010/03/nice-bloom-filter-application.html">这里</a> 是一个简短说明他们如何使用 bloom filter）
+    <li><a href="https://github.com/jaybaird/python-bloomfilter/blob/master/pybloom/pybloom.py">python-bloomfilter</a> 使用加密哈希算法。
+    <li><a href="http://google.com/codesearch/p?hl=en#n1QSs64cdFo/src/cmd/venti/srv/bloom.c&q=bloom%20filter&l=130">Plan9</a> 使用一种简单的哈希算法，<a href="http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.152.579&rank=1">Mitzenmacher 2005</a>
+    <li><a href="https://github.com/sdroege/snippets/blob/master/snippets/bloomfilter.c">Sdroege Bloom filter</a> 使用 fnv1a (把这个加进来是希望展示有人使用 fnv 算法)
+    <li><a href="http://google.com/codesearch/p?hl=en#GUxBL_cNJpE/src/store_key_md5.c&q=bloom%20package:squid&d=1">Squid</a> 使用 MD5
     </ul>
 
-    <h3>How big should I make my Bloom filter?</h3>
+    <h3>Bloom filter 应该设计为多大？</h3>
 
-    <p>It's a nice property of Bloom filters that you can modify the false positive rate of your filter. A larger filter will have less false positives, and a smaller one more.
+    <p>Bloom filter 的一个优良特性就是可以修改过滤器的错误率。一个大的过滤器会拥有比一个小的过滤器更低的错误率。
 
-    <p>Your false positive rate will be approximately <em>(1-e<sup>-kn/m</sup>)<sup>k</sup></em>, so you can just plug the number <em>n</em> of elements you expect to insert, and try various values of <em>k</em> and <em>m</em> to configure your filter for your application.<sup><a href="#footnote2">2</a></sup>
+    <p>错误率会近似于 <em>(1-e<sup>-kn/m</sup>)<sup>k</sup></em>, 所以你只需要先确定可能插入的数据集的容量大小 <em>n</em>, 然后再调整 <em>k</em> 和 <em>m</em> 来为你的应用配置过滤器。<sup><a href="#footnote2">2</a></sup>
 
-    <p>This leads to an obvious question:
+    <p>而这带来了一个显而易见的问题:
 
-    <h3>How many hash functions should I use?</h3>
+    <h3>应该使用多少个哈希函数?</h3>
 
-    <p>The more hash functions you have, the slower your bloom filter, and the quicker it fills up. If you have too few, however, you may suffer too many false positives.
+    <p>Bloom filter 使用的哈希函数越多运行速度就会越慢。但是如果哈希函数过少，又会遇到误判率高的问题。
 
-    <p>Since you have to pick <em>k</em> when you create the filter, you'll have to ballpark what range you expect <em>n</em> to be in. Once you have that, you still have to choose a potential <em>m</em> (the number of bits) and <em>k</em> (the number of hash functions).
+    <p>在创建一个 Bloom filter 的时候需要确定 <em>k</em> 的值，也就是说你需要提前圈定 <em>n</em> 的变动范围。而一旦你这样做了，你依然需要确定 <em>m</em>（总比特数）和 <em>k</em> (哈希函数的个数）的值。
 
-    <p>It seems a difficult optimization problem, but fortunately, given an <em>m</em> and an <em>n</em>, we have a function to choose the optimal value of <em>k</em>: <em>(m/n)ln(2)</em> <sup><a href="#footnote2">2</a>, <a href="#footnote3">3</a></sup>
+    <p>似乎这是一个十分困难的优化问题，但幸运的是，对于给定的 <em>m</em> 和 <em>n</em> ，有一个函数可以帮我们确定最优的 <em>k</em> 值: <em>(m/n)ln(2)</em> <sup><a href="#footnote2">2</a>, <a href="#footnote3">3</a></sup>
 
-    <p>So, to choose the size of a bloom filter, we:
+    <p>所以可以通过以下的步骤来确定 Bloom filter 的大小:
 
-    <p><ol><li>Choose a ballpark value for <em>n</em>
-    <li>Choose a value for <em>m</em>
-    <li>Calculate the optimal value of <em>k</em>
-    <li>Calculate the error rate for our chosen values of <em>n</em>, <em>m</em>, and <em>k</em>. If it's unacceptable, return to step 2 and change m; otherwise we're done.
+    <p><ol><li>确定 <em>n</em> 的变动范围
+    <li>选定 <em>m</em> 的值
+    <li>计算 <em>k</em> 的最优值
+    <li>对于给定的<em>n</em>, <em>m</em>, and <em>k</em>计算错误率。如果这个错误率不能接收，那么回到第二步，否则结束
     </ol>
 
-    <h3>How fast and space efficient is a Bloom filter?</h3>
+    <h3>Bloom filter 的时间复杂度和空间复杂度?</h3>
 
-    <p>Given a Bloom filter with <em>m</em> bits and <em>k</em> hashing functions, both insertion and membership testing are <em>O(k)</em>. That is, each time you want to add an element to the set or check set membership, you just need to run the element through the <em>k</em> hash functions and add it to the set or check those bits.
+    <p>对于一个 <em>m</em> 和 <em>k</em> 值确定的 Bloom filter，插入和测试操作的时间复杂度都是 O(k)。这意味着每次你想要插入一个元素或者查询一个元素是否在集合中，只需要使用 <em>k</em> 个哈希函数对这个元素求值，然后将对应的比特位标记或者检查对应的比特位。
 
-    <p>The space advantages are more difficult to sum up; again it depends on the error rate you're willing to tolerate. It also depends on the potential range of the elements to be inserted; if it is very limited, a deterministic bit vector can do better. If you can't even ballpark estimate the number of elements to be inserted, you may be better off with a hash table or a scalable Bloom filter<sup><a href="#footnote4">4</a></sup>.
+    <p>相比之下，Bloom filter 的空间复杂度更难以概述，它取决于你可以忍受的错误率。同时也取决于输入元素的范围，如果这个范围是有限的，那么一个确定的比特向量就可以很好的解决问题。如果你甚至不能很好的估计输入元素的范围，那么你最好选择一个哈希表或者一个可拓展的 Bloom filter。<sup><a href="#footnote4">4</a></sup>.
 
-    <h3>What can I use them for?</h3>
+    <h3>可以用 Bloom filter 来做什么?</h3>
 
-    <p>I'll link you to <a href="http://en.wikipedia.org/wiki/Bloom_filter#Examples">wiki</a> instead of copying what they say. <a href="http://blip.tv/pycon-us-videos-2009-2010-2011/pycon-2011-handling-ridiculous-amounts-of-data-with-probabilistic-data-structures-4899047">C. Titus Brown</a> also has an excellent talk on an application of Bloom filters to bioinformatics.
+    <p>我会将你引向 <a href="http://en.wikipedia.org/wiki/Bloom_filter#Examples">wiki</a> 而不是将它们的内容拷贝过来。 <a href="http://blip.tv/pycon-us-videos-2009-2010-2011/pycon-2011-handling-ridiculous-amounts-of-data-with-probabilistic-data-structures-4899047">C. Titus Brown</a> 的演讲很好的阐述了 Bloom filter 在生物信息学fang的应用。
 
-    <h3>References</h3>
+    <h3>参考文献</h3>
 
     <p><a name="footnote1">1:</span> <a href="http://citeseer.ist.psu.edu/viewdoc/download;jsessionid=6CA79DD1A90B3EFD3D62ACE5523B99E7?doi=10.1.1.127.9672&rep=rep1&type=pdf">Network Applications of Bloom Filters: A Survey</a>, Broder and Mitzenmacher. An excellent overview.
     <p><a name="footnote2">2:</span> <a href="http://en.wikipedia.org/wiki/Bloom_filter#Probability_of_false_positives">Wikipedia</a>, which has an excellent and comprehensive page on Bloom filters
