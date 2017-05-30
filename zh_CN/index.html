@@ -169,9 +169,9 @@ function testMembership(evt) {
 
   if ($("#bit[i='" + a + "']").attr("class") == "set" &&
       $("#bit[i='" + b + "']").attr("class") == "set") {
-    $("#ismember").html("maybe!");
+    $("#ismember").html("可能是!");
   } else {
-    $("#ismember").html("no");
+    $("#ismember").html("否");
   }
 
   $("#memfnv").html(a)
@@ -225,9 +225,9 @@ $(function() {
 
     <p> Bloom filter 是一个数据结构，它可以用来判断某个元素是否在集合内，具有运行快速，内存占用小的特点。
 
-    <p> 而高效插入和查询的代价就是 Bloom Filter 是一个<strong>概率数据结构</strong>: 它可以告诉我们一个元素 <em>绝对不</em>在集合内或者 <em>可能</em> 在集合内
+    <p> 而高效插入和查询的代价就是，Bloom Filter 是一个<strong>基于概率的数据结构</strong>：它只能告诉我们一个元素<em>绝对不</em>在集合内或<em>可能</em>在集合内
 
-    <p> Bloom filter 的基础数据结构是一个 <strong>比特向量</strong>。 下面是一个简单的示例:
+    <p> Bloom filter 的基础数据结构是一个 <strong>比特向量</strong>。 下面是一个简单的示例：
 
     <div class="insetbox">
         <table id="bitvector" border=1 cellpadding=0 cellspacing=0>
@@ -236,11 +236,11 @@ $(function() {
         </table>
     </div>
 
-    <p>表中的每一个空格表示一个比特, 空格下面的数字表示它的索引. 只需要简单的对输入进行多次哈希操作，并把对应于其结果的比特置为1，就可以想 Bloom filter 添加一个元素。
+    <p>表中的每一个空格表示一个比特, 空格下面的数字表示它的索引。只需要简单的对输入进行多次哈希操作，并把对应于其结果的比特置为1，就可以想 Bloom filter 添加一个元素。
 
-    <p>相较于解释，直观的看到它的变化总是更利于我们加深理解的, 所以输入一些字符串然后观察比特向量的变化。Fnv 和 Murmur 是两个简单的哈希函数：
+    <p>相较于解释，直观的看到它的变化总是更利于我们加深理解的，所以你可以输入一些字符串然后观察上方的向量变化。其中使用了 Fnv 和 Murmur 这两个简单的哈希函数：
     <div id="addstring" class="insetbox">
-        <p>输入一个字符串: <input id="addtoset"><input type="submit" id="hash" value="add to bloom filter">
+        <p>输入一个字符串: <input id="addtoset"><input type="submit" id="hash" value="添加到 bloom filter">
 
         <div id="hashes">
           fnv: <span id="fnv"></span><br>
@@ -250,9 +250,9 @@ $(function() {
         <p>你的集合: [<span id="yourset"></span>]
     </div>
 
-    <p>当你往集合里添加一个字符串的时候, 你可以检查应用对应哈希函数的位置是否为1。这里我用了绿色表示最新添加的元素对应位置,但是实际上你需要知道，表格里的所有值均为1。
+    <p>当你往集合里添加一个字符串的时候, 你可以检查应用对应哈希函数的位置是否为1。这里我用了绿色表示最新添加的元素对应位置，但是实际上你要知道，表格里的不同颜色都只代表了值为 1。
 
-    <p>你可以简单的通过对字符串应用同样的哈希函数 ，然后看比特向量里对应的位置是否为1。如果是，你只知道元素 <em>可能</em> 在里面, 因为这些对应位置有可能恰巧是由其他元素或者其他元素的组合所引起的。
+    <p>你可以简单的通过对字符串应用同样的哈希函数，然后看比特向量里对应的位置是否为1的方式来判断一个元素是否在集合里。如果是，你只知道元素<em>可能</em>在里面, 因为这些对应位置有可能恰巧是由其他元素或者其他元素的组合所引起的。
 
     <div id="testmembership" class="insetbox">
         <p>测试: <input id="membership">
@@ -261,7 +261,7 @@ $(function() {
             murmur: <span id="memmurmur"></span>
         </div>
 
-        <p>这个元素在集合中吗？<span id="ismember">no</span>
+        <p>这个元素在集合中吗？<span id="ismember">否</span>
 
         <p>误判的概率: <span id="false_pos_prob">0%</span>
     </div>
@@ -270,17 +270,17 @@ $(function() {
 
     <h2>高级话题</h2>
 
-    <p>在写下更过关于 Bloom filter 的内容之间，我需要声明一点：我从未在生产环境使用过 Bloom filter。所以不要不假思索的相信下面的内容。我想做的只是给你一个概括式的介绍同时指明你可以去哪里寻找更多内容。
+    <p>在写下更过关于 Bloom filter 的内容之前，我需要声明一点：我从未在生产环境使用过 Bloom filter。所以不要不假思索的相信下面的内容，我想做的只是给你一个概括式的介绍，同时告诉你可以去哪里寻找更多内容。
 
     <p>在下面的内容里, 我们假设在 Bloom filter 里面有 <em>k</em> 个哈希函数, <em>m</em> 个比特, 以及 <em>n</em> 个已插入元素。
 
     <h3>哈希函数</h3>
 
-    <p>Bloom filter 里的哈希函数需要是 <strong><a href="http://en.wiktionary.org/wiki/independent_function">彼此独立</a></strong> 且 <strong><a href="http://en.wikipedia.org/wiki/Uniform_distribution_(discrete)">均匀分布的</a></strong>。同时，它们也需要尽可能的快 (尽管 sha1 之类的加密哈希算法被广泛应用，但是在这一点的基础上并不是一个很好的选择).
+    <p>Bloom filter 里的哈希函数需要是<strong><a href="http://en.wiktionary.org/wiki/independent_function">彼此独立</a></strong>且<strong><a href="http://en.wikipedia.org/wiki/Uniform_distribution_(discrete)">均匀分布</a></strong>。同时，它们也需要尽可能的快 (尽管 sha1 之类的加密哈希算法被广泛应用，但是在这一点上考虑并不是一个很好的选择).
 
-    <p>快速，简单且彼此独立的哈希函数的例子 <sup><a href="#footnote3">3</a></sup> 包括 <a href="https://sites.google.com/site/murmurhash/">murmur</a>,  <a href="http://isthe.com/chongo/tech/comp/fnv/">fnv</a> 族哈希函数, 以及 <a href="http://www.google.com/codesearch/url?ct=ext&url=http://www.concentric.net/~Ttwang/tech/inthash.htm&usg=AFQjCNEBOwEAd_jb5vYSckmG7OxrkeQhLA">HashMix</a>.
+    <p>这些都是快速，简单且彼此独立的哈希函数的例子：<sup><a href="#footnote3">3</a></sup> 包括 <a href="https://sites.google.com/site/murmurhash/">murmur</a>, <a href="http://isthe.com/chongo/tech/comp/fnv/">fnv</a> 族哈希函数, 以及<a href="http://www.google.com/codesearch/url?ct=ext&url=http://www.concentric.net/~Ttwang/tech/inthash.htm&usg=AFQjCNEBOwEAd_jb5vYSckmG7OxrkeQhLA">HashMix</a>.
 
-    <p>如果你希望了解一个比加密哈希函数快的哈希函数可以达到什么程度，可以参考<a href="https://github.com/bitly/dablooms/pull/19">这个故事</a> 当把 bloom filter 的实现从 md5 切换到 murmur 时，速度提升了 800%。
+    <p>如果你希望了解一个比加密哈希函数快的哈希函数可以达到什么程度，可以参考<a href="https://github.com/bitly/dablooms/pull/19">这个故事</a>。当把 bloom filter 的实现从 md5 切换到 murmur 时，速度提升了 800%。
 
     <p>一个关于 Bloom filter 实现方式的简单调查:
     <ul><li><a href="http://www.google.com/codesearch/p?hl=en#OAMlx_jo-ck/src/chrome/browser/safe_browsing/bloom_filter.cc&q=bloom&exact_package=chromium&d=4">Chromium</a> 使用 <a href="http://www.google.com/codesearch/url?ct=ext&url=http://www.concentric.net/~Ttwang/tech/inthash.htm&usg=AFQjCNEBOwEAd_jb5vYSckmG7OxrkeQhLA">HashMix</a>. (同时, <a href="http://blog.alexyakunin.com/2010/03/nice-bloom-filter-application.html">这里</a> 是一个简短说明他们如何使用 bloom filter）
@@ -300,7 +300,7 @@ $(function() {
 
     <h3>应该使用多少个哈希函数?</h3>
 
-    <p>Bloom filter 使用的哈希函数越多运行速度就会越慢。但是如果哈希函数过少，又会遇到误判率高的问题。
+    <p>Bloom filter 使用的哈希函数越多运行速度就会越慢。但是如果哈希函数过少，又会遇到误判率高的问题。所以这个问题上需要认真考虑。
 
     <p>在创建一个 Bloom filter 的时候需要确定 <em>k</em> 的值，也就是说你需要提前圈定 <em>n</em> 的变动范围。而一旦你这样做了，你依然需要确定 <em>m</em>（总比特数）和 <em>k</em> (哈希函数的个数）的值。
 
@@ -322,7 +322,7 @@ $(function() {
 
     <h3>可以用 Bloom filter 来做什么?</h3>
 
-    <p>我会将你引向 <a href="http://en.wikipedia.org/wiki/Bloom_filter#Examples">wiki</a> 而不是将它们的内容拷贝过来。 <a href="http://blip.tv/pycon-us-videos-2009-2010-2011/pycon-2011-handling-ridiculous-amounts-of-data-with-probabilistic-data-structures-4899047">C. Titus Brown</a> 的演讲很好的阐述了 Bloom filter 在生物信息学fang的应用。
+    <p>我会将你引向 <a href="http://en.wikipedia.org/wiki/Bloom_filter#Examples">wiki</a>而不是将它们的内容拷贝过来。 <a href="http://blip.tv/pycon-us-videos-2009-2010-2011/pycon-2011-handling-ridiculous-amounts-of-data-with-probabilistic-data-structures-4899047">C. Titus Brown</a> 的演讲很好的阐述了 Bloom filter 在生物信息学中的应用。
 
     <h3>参考文献</h3>
 
