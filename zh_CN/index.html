@@ -74,9 +74,9 @@ sup {
 <script src="../murmurhash.js"></script>
 <script>
 // The Jenkins 96 bit mix function:
-// http://www.concentric.net/~Ttwang/tech/inthash.htm
+// https://web.archive.org/web/20061030103559/http://www.concentric.net/~Ttwang/tech/inthash.htm
 // stolen from Google Chromium's bloom filter
-// http://www.google.com/codesearch/p#OAMlx_jo-ck/src/chrome/browser/safe_browsing/bloom_filter.cc&exact_package=chromium
+// https://chromium.googlesource.com/chromium/chromium/+/refs/heads/main/chrome/browser/safe_browsing/bloom_filter.cc
 // thanks dudes!
 var seed1 = Math.floor(Math.random() * 2e32);
 var seed2 = Math.floor(Math.random() * 2e32);
@@ -278,16 +278,16 @@ $(function() {
 
     <p>Bloom filter 里的哈希函数需要是<strong><a href="http://en.wiktionary.org/wiki/independent_function">彼此独立</a></strong>且<strong><a href="http://en.wikipedia.org/wiki/Uniform_distribution_(discrete)">均匀分布</a></strong>。同时，它们也需要尽可能的快 (尽管 sha1 之类的加密哈希算法被广泛应用，但是在这一点上考虑并不是一个很好的选择).
 
-    <p>这些都是快速，简单且彼此独立的哈希函数的例子：<sup><a href="#footnote3">3</a></sup> 包括 <a href="https://sites.google.com/site/murmurhash/">murmur</a>, <a href="http://isthe.com/chongo/tech/comp/fnv/">fnv</a> 族哈希函数, 以及<a href="http://www.google.com/codesearch/url?ct=ext&url=http://www.concentric.net/~Ttwang/tech/inthash.htm&usg=AFQjCNEBOwEAd_jb5vYSckmG7OxrkeQhLA">HashMix</a>.
+    <p>这些都是快速，简单且彼此独立的哈希函数的例子：<sup><a href="#footnote3">3</a></sup> 包括 <a href="https://sites.google.com/site/murmurhash/">murmur</a>, <a href="http://isthe.com/chongo/tech/comp/fnv/">fnv</a> 族哈希函数, 以及<a href="https://web.archive.org/web/20061030103559/http://www.concentric.net/~Ttwang/tech/inthash.htm">HashMix</a>.
 
     <p>如果你希望了解一个比加密哈希函数快的哈希函数可以达到什么程度，可以参考<a href="https://github.com/bitly/dablooms/pull/19">这个故事</a>。当把 bloom filter 的实现从 md5 切换到 murmur 时，速度提升了 800%。
 
     <p>一个关于 Bloom filter 实现方式的简单调查:
-    <ul><li><a href="http://www.google.com/codesearch/p?hl=en#OAMlx_jo-ck/src/chrome/browser/safe_browsing/bloom_filter.cc&q=bloom&exact_package=chromium&d=4">Chromium</a> 使用 <a href="http://www.google.com/codesearch/url?ct=ext&url=http://www.concentric.net/~Ttwang/tech/inthash.htm&usg=AFQjCNEBOwEAd_jb5vYSckmG7OxrkeQhLA">HashMix</a>. (同时, <a href="http://blog.alexyakunin.com/2010/03/nice-bloom-filter-application.html">这里</a> 是一个简短说明他们如何使用 bloom filter）
+    <ul><li><a href="https://chromium.googlesource.com/chromium/chromium/+/refs/heads/main/chrome/browser/safe_browsing/bloom_filter.cc">Chromium</a> 使用 <a href="https://web.archive.org/web/20061030103559/http://www.concentric.net/~Ttwang/tech/inthash.htm">HashMix</a>. (同时, <a href="https://web.archive.org/web/20160306232658/http://blog.alexyakunin.com/2010/03/nice-bloom-filter-application.html">这里</a> 是一个简短说明他们如何使用 bloom filter）
     <li><a href="https://github.com/jaybaird/python-bloomfilter/blob/master/pybloom/pybloom.py">python-bloomfilter</a> 使用加密哈希算法。
-    <li><a href="http://google.com/codesearch/p?hl=en#n1QSs64cdFo/src/cmd/venti/srv/bloom.c&q=bloom%20filter&l=130">Plan9</a> 使用一种简单的哈希算法，<a href="http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.152.579&rank=1">Mitzenmacher 2005</a>
+    <li><a href="https://plan9.io/sources/plan9/sys/src/cmd/venti/srv/bloom.c">Plan9</a> 使用一种简单的哈希算法，<a href="http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.152.579&rank=1">Mitzenmacher 2005</a>
     <li><a href="https://github.com/sdroege/snippets/blob/master/snippets/bloomfilter.c">Sdroege Bloom filter</a> 使用 fnv1a (把这个加进来是希望展示有人使用 fnv 算法)
-    <li><a href="http://google.com/codesearch/p?hl=en#GUxBL_cNJpE/src/store_key_md5.c&q=bloom%20package:squid&d=1">Squid</a> 使用 MD5
+    <li><a href="https://github.com/squid-cache/squid/blob/master/src/store_key_md5.cc">Squid</a> 使用 MD5
     </ul>
 
     <h3>Bloom filter 应该设计为多大？</h3>
@@ -322,7 +322,7 @@ $(function() {
 
     <h3>可以用 Bloom filter 来做什么?</h3>
 
-    <p>我会将你引向 <a href="http://en.wikipedia.org/wiki/Bloom_filter#Examples">wiki</a>而不是将它们的内容拷贝过来。 <a href="http://blip.tv/pycon-us-videos-2009-2010-2011/pycon-2011-handling-ridiculous-amounts-of-data-with-probabilistic-data-structures-4899047">C. Titus Brown</a> 的演讲很好的阐述了 Bloom filter 在生物信息学中的应用。
+    <p>我会将你引向 <a href="http://en.wikipedia.org/wiki/Bloom_filter#Examples">wiki</a>而不是将它们的内容拷贝过来。 <a href="https://archive.org/details/pyvideo_402___handling-ridiculous-amounts-of-data-with-probabilistic-data-structures">C. Titus Brown</a> 的演讲很好的阐述了 Bloom filter 在生物信息学中的应用。
 
     <h3>参考文献</h3>
 

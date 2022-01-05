@@ -74,9 +74,9 @@ sup {
 <script src="./murmurhash.js"></script>
 <script>
 // The Jenkins 96 bit mix function:
-// http://www.concentric.net/~Ttwang/tech/inthash.htm
+// https://web.archive.org/web/20061030103559/http://www.concentric.net/~Ttwang/tech/inthash.htm
 // stolen from Google Chromium's bloom filter
-// http://www.google.com/codesearch/p#OAMlx_jo-ck/src/chrome/browser/safe_browsing/bloom_filter.cc&exact_package=chromium
+// https://chromium.googlesource.com/chromium/chromium/+/refs/heads/main/chrome/browser/safe_browsing/bloom_filter.cc
 // thanks dudes!
 var seed1 = Math.floor(Math.random() * 2e32);
 var seed2 = Math.floor(Math.random() * 2e32);
@@ -279,16 +279,16 @@ $(function() {
 
     <p>The hash functions used in a Bloom filter should be <strong><a href="http://en.wiktionary.org/wiki/independent_function">independent</a></strong> and <strong><a href="http://en.wikipedia.org/wiki/Uniform_distribution_(discrete)">uniformly distributed</a></strong>. They should also be as fast as possible (cryptographic hashes such as sha1, though widely used therefore are not very good choices).
 
-    <p>Examples of fast, simple hashes that are independent enough<sup><a href="#footnote3">3</a></sup> include <a href="https://sites.google.com/site/murmurhash/">murmur</a>, the <a href="http://isthe.com/chongo/tech/comp/fnv/">fnv</a> series of hashes, and <a href="http://www.google.com/codesearch/url?ct=ext&url=http://www.concentric.net/~Ttwang/tech/inthash.htm&usg=AFQjCNEBOwEAd_jb5vYSckmG7OxrkeQhLA">HashMix</a>.
+    <p>Examples of fast, simple hashes that are independent enough<sup><a href="#footnote3">3</a></sup> include <a href="https://sites.google.com/site/murmurhash/">murmur</a>, the <a href="http://isthe.com/chongo/tech/comp/fnv/">fnv</a> series of hashes, and <a href="https://web.archive.org/web/20061030103559/http://www.concentric.net/~Ttwang/tech/inthash.htm">HashMix</a>.
 
     <p>To see the difference that a faster-than-cryptographic hash function can make, <a href="https://github.com/bitly/dablooms/pull/19">check out this story</a> of a ~800% speedup when switching a bloom filter implementation from md5 to murmur.
 
     <p>In a short survey of bloom filter implementations:
-    <ul><li><a href="http://www.google.com/codesearch/p?hl=en#OAMlx_jo-ck/src/chrome/browser/safe_browsing/bloom_filter.cc&q=bloom&exact_package=chromium&d=4">Chromium</a> uses <a href="http://www.google.com/codesearch/url?ct=ext&url=http://www.concentric.net/~Ttwang/tech/inthash.htm&usg=AFQjCNEBOwEAd_jb5vYSckmG7OxrkeQhLA">HashMix</a>. (also, <a href="http://blog.alexyakunin.com/2010/03/nice-bloom-filter-application.html">here's</a> a short description of how they use bloom filters)
+    <ul><li><a href="https://chromium.googlesource.com/chromium/chromium/+/refs/heads/main/chrome/browser/safe_browsing/bloom_filter.cc">Chromium</a> uses <a href="https://web.archive.org/web/20061030103559/http://www.concentric.net/~Ttwang/tech/inthash.htm">HashMix</a>. (also, <a href="https://web.archive.org/web/20160306232658/http://blog.alexyakunin.com/2010/03/nice-bloom-filter-application.html">here's</a> a short description of how they use bloom filters)
     <li><a href="https://github.com/jaybaird/python-bloomfilter/blob/master/pybloom/pybloom.py">python-bloomfilter</a> uses cryptographic hashes
-    <li><a href="http://google.com/codesearch/p?hl=en#n1QSs64cdFo/src/cmd/venti/srv/bloom.c&q=bloom%20filter&l=130">Plan9</a> uses a simple hash as proposed in <a href="http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.152.579&rank=1">Mitzenmacher 2005</a>
+    <li><a href="https://plan9.io/sources/plan9/sys/src/cmd/venti/srv/bloom.c">Plan9</a> uses a simple hash as proposed in <a href="http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.152.579&rank=1">Mitzenmacher 2005</a>
     <li><a href="https://github.com/sdroege/snippets/blob/master/snippets/bloomfilter.c">Sdroege Bloom filter</a> uses fnv1a (included just because I wanted to show one that uses fnv.)
-    <li><a href="http://google.com/codesearch/p?hl=en#GUxBL_cNJpE/src/store_key_md5.c&q=bloom%20package:squid&d=1">Squid</a> uses MD5
+    <li><a href="https://github.com/squid-cache/squid/blob/master/src/store_key_md5.cc">Squid</a> uses MD5
     </ul>
 
     <h3>How big should I make my Bloom filter?</h3>
@@ -323,7 +323,7 @@ $(function() {
 
     <h3>What can I use them for?</h3>
 
-    <p>I'll link you to <a href="http://en.wikipedia.org/wiki/Bloom_filter#Examples">wiki</a> instead of copying what they say. <a href="http://blip.tv/pycon-us-videos-2009-2010-2011/pycon-2011-handling-ridiculous-amounts-of-data-with-probabilistic-data-structures-4899047">C. Titus Brown</a> also has an excellent talk on an application of Bloom filters to bioinformatics.
+    <p>I'll link you to <a href="http://en.wikipedia.org/wiki/Bloom_filter#Examples">wiki</a> instead of copying what they say. <a href="https://archive.org/details/pyvideo_402___handling-ridiculous-amounts-of-data-with-probabilistic-data-structures">C. Titus Brown</a> also has an excellent talk on an application of Bloom filters to bioinformatics.
 
     <h3>References</h3>
 
