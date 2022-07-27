@@ -306,6 +306,12 @@ $(function() {
         <li>
           <a href="https://github.com/influxdata/influxdb/blob/e20b5e99a6f92614b1b97bda0807ef6c2ab1f7e9/pkg/bloom/bloom.go#L3">influxdb</a> uses xxhash
         </li>
+        <li>
+          <a href="https://github.com/armon/bloomd/blob/23c19a7f5cbb35d7c3d970bef13bc2bfbe3625f6/src/libbloom/bloom.c#L306">bloomd</a> (a neat project that uses a redis-ish protocol) uses murmur for the first two hashes, <a href="https://burtleburtle.net/bob/hash/spooky.html">SpookyHash</a> for the second two hashes, and a combination of the two for further hashes, as described in <sup><a href="#footnote3">3</a></sup>
+        </li>
+        <li>
+          <a href="https://github.com/hashlookup/fleur">fleur (C)</a>, <a href="https://github.com/DCSO/flor">flor (python)</a>, and <a href="https://github.com/DCSO/bloom">bloom (go)</a> all use fnv
+        </li>
     </ul>
 
     <h3>How big should I make my Bloom filter?</h3>
