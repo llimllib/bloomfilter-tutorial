@@ -312,6 +312,9 @@ $(function() {
         <li>
           <a href="https://github.com/hashlookup/fleur">fleur (C)</a>, <a href="https://github.com/DCSO/flor">flor (python)</a>, and <a href="https://github.com/DCSO/bloom">bloom (go)</a> all use fnv
         </li>
+        <li>
+          <a href="https://github.com/sqlite/sqlite/blob/aa07b36dd52cfb4d7690d4e8917ea0187d44b405/src/vdbe.c#L674">Sqlite</a> added a bloom filter for analytic queries, but I do not understand the hash algorithm. Dr. Hipp <a href="https://sqlite.org/forum/forumpost/bd59962986a5668b">explains the purpose</a> of the filters on the sqlite forum.
+        </li>
     </ul>
 
     <h3>How big should I make my Bloom filter?</h3>
