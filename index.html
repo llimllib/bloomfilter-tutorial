@@ -286,7 +286,7 @@ $(function() {
     <p>In a short survey of bloom filter implementations:
     <ul>
         <li>
-          <a href="https://chromium.googlesource.com/chromium/chromium/+/refs/heads/main/chrome/browser/safe_browsing/bloom_filter.cc">Chromium</a> uses <a href="https://web.archive.org/web/20061030103559/http://www.concentric.net/~Ttwang/tech/inthash.htm">HashMix</a>. (also, <a href="https://web.archive.org/web/20160306232658/http://blog.alexyakunin.com/2010/03/nice-bloom-filter-application.html">here's</a> a short description of how they use bloom filters)
+          <a href="https://github.com/chromium/chromium/blob/faf8581c2f9cdcb590d3544530c88a00c043461b/components/optimization_guide/core/bloom_filter.cc">Chromium</a> uses <a href="https://github.com/chromium/chromium/blob/faf8581c2f9cdcb590d3544530c88a00c043461b/components/optimization_guide/core/bloom_filter.cc#L17-L26">murmur</a>. (also, <a href="https://web.archive.org/web/20160306232658/http://blog.alexyakunin.com/2010/03/nice-bloom-filter-application.html">here's</a> a short description of how they use bloom filters)
         </li>
         <li>
           <a href="https://plan9.io/sources/plan9/sys/src/cmd/venti/srv/bloom.c">Plan9</a> uses a simple hash as proposed in <a href="http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.152.579&rank=1">Mitzenmacher 2005</a>
