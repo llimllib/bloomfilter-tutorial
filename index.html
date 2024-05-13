@@ -1,371 +1,469 @@
-<html><head><title>Bloom Filters by Example</title>
-<style type="text/css">
-table#bitvector {
-	border-width: 1px;
-	border-spacing: 0px;
-	border-style: none;
-	border-color: rgb(51, 51, 51);
-	border-collapse: collapse;
-	background-color: white;
-    margin: auto;
-}
-table#bitvector th {
-	border-width: 1px;
-	padding: 1px;
-	border-style: solid;
-	border-color: rgb(221, 221, 221);
-	background-color: white;
-	-moz-border-radius: ;
-}
-table#bitvector td {
-	border-width: 1px;
-	padding: 1px;
-	border-style: solid;
-	border-color: rgb(221, 221, 221);
-	background-color: white;
-	-moz-border-radius: ;
-}
-.active {
-    background-color: green !important;
-}
-.set {
-    background-color: black !important;
-}
-#content {
-    width: 650px;
-    margin: auto;
-    background-color: #fff;
-    padding: 20px;
-    -webkit-border-radius: 10px;
-    -moz-border-radius: 10px;
-    border-radius: 10px;
-}
-body {
-    background-color: #d3ddb4;
-    color: black;
-    font-family: Palatino, Georgia, "Times New Roman", Times, serif;
-    font-size: 17px;
-}
-p {
-  line-height: 1.2em;
-  margin: 1em 0px;
-}
-sup {
-  font-size: 0.75em;
-  line-height: 0.5em;
-}
-.insetbox {
-    width: 400px;
-    margin: auto;
-    background-color: #f1f1ce;
-    padding: 10px;
-    -webkit-border-radius: 10px;
-    -moz-border-radius: 10px;
-    border-radius: 10px;
-}
-#addstring {
-}
-#testmembership {
-}
-#ismember {
-}
-</style>
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.5.2/jquery.min.js"></script>
-<script src="./murmurhash.js"></script>
-<script>
-// The Jenkins 96 bit mix function:
-// https://web.archive.org/web/20061030103559/http://www.concentric.net/~Ttwang/tech/inthash.htm
-// stolen from Google Chromium's bloom filter
-// https://chromium.googlesource.com/chromium/chromium/+/refs/heads/main/chrome/browser/safe_browsing/bloom_filter.cc
-// thanks dudes!
-var seed1 = Math.floor(Math.random() * 2e32);
-var seed2 = Math.floor(Math.random() * 2e32);
-function hashMix(hash_key) {
-  var a = seed1;
-  var b = seed2;
-  var c = hash_key;
-  console.log(a, b, c);
+<html>
 
-  a -= (b + c);  a ^= (c >> 13);
-  b -= (c + a);  b ^= (a << 8);
-  c -= (a + b);  c ^= (b >> 13);
-  a -= (b + c);  a ^= (c >> 12);
-  b -= (c + a);  b ^= (a << 16);
-  c -= (a + b);  c ^= (b >> 5);
-  a -= (b + c);  a ^= (c >> 3);
-  b -= (c + a);  b ^= (a << 10);
-  c -= (a + b);  c ^= (b >> 15);
-
-  //XXX: can this even be negative? It was designed to run with uints. Javascript is dumb.
-  return Math.abs(c);
-}
-
-// thanks Borgar!
-// http://stackoverflow.com/questions/1240408/reading-bytes-from-a-javascript-string/1242596#1242596
-function stringToBytes(str) {
-  var ch, st, re = [];
-  for (var i = 0; i < str.length; i++) {
-    ch = str.charCodeAt(i);  // get char
-    st = [];                 // set up "stack"
-    do {
-      st.push( ch & 0xFF );  // push byte to stack
-      ch = ch >> 8;          // shift value down by 1 byte
+<head>
+  <title>Bloom Filters by Example</title>
+  <style type="text/css">
+    table#bitvector {
+      border-width: 1px;
+      border-spacing: 0px;
+      border-style: none;
+      border-color: rgb(51, 51, 51);
+      border-collapse: collapse;
+      background-color: white;
+      margin: auto;
     }
-    while ( ch );
-    // add stack contents to result
-    // done because chars have "wrong" endianness
-    re = re.concat( st.reverse() );
-  }
- // return an array of bytes
-  return re;
-}
 
-var FNVPRIME = 0x01000193;
-var FNVINIT = 0x811c9dc5;
-
-function fnv1s(str) {
-  var bytes = stringToBytes(str);
-  var hash = FNVINIT;
-  for (var i=0; i < bytes.length; i++) {
-    hash *= FNVPRIME;
-    hash ^= bytes[i];
-  }
-  return Math.abs(hash);
-}
-
-nboxes = 15;
-strings = [];
-
-function bloom(s) {
-  $(".active").attr("class", "set");
-
-  strings.push(s);
-  $("#yourset").html(strings.join(", "));
-
-  //clear the text input box
-  $("#addtoset").val("");
-
-  var a = fnv1s(s) % nboxes;
-  var b = murmur(s) % nboxes;
-
-  $("#bit[i='" + a + "']").attr("class", "active");
-  $("#bit[i='" + b + "']").attr("class", "active");
-
-  //the probability of a false positive is the number of 1s in the bit vector
-  //divided by the number of bits in the vector to the power of k, the number
-  //of index functions you're using
-  var p = Math.round((Math.pow($(".set, .active").length / nboxes, 2)) * 100);
-  $("#false_pos_prob").html(p + "%");
-}
-
-function testMembership(evt) {
-  //clear out "active" cells
-  $(".active").attr("class", "set");
-
-  var s = $("#membership").val();
-
-  var a = fnv1s(s) % nboxes;
-  var b = murmur(s) % nboxes;
-
-  if ($("#bit[i='" + a + "']").attr("class") == "set" &&
-      $("#bit[i='" + b + "']").attr("class") == "set") {
-    $("#ismember").html("maybe!");
-  } else {
-    $("#ismember").html("no");
-  }
-
-  $("#memfnv").html(a)
-  $("#memmurmur").html(b)
-}
-
-$(function() {
-  //add the table cells which represent our bloom filter bit array
-  for (var i=0; i<nboxes; i++) {
-    $("#bits").append('<td id="bit" i="' + i + '" width=20>&nbsp;</td>');
-    $("#labels").append('<td id="label" i="' + i + '" align="center">' + i + '</td>');
-  }
-
-  //handle a click on the "add to bloom filter" button
-  $("#hash").click(function() {
-    var s = $("#addtoset").val();
-    $("#fnv").html(fnv1s(s) % nboxes)
-    $("#murmur").html(murmur(s) % nboxes)
-    bloom(s);
-  });
-
-  // handle enter key on "add to bloom filter" form
-  $('#addtoset').keydown(function (event) {
-    if (event.keyCode == '13') {
-     event.preventDefault();
-     $('#hash').click();
+    table#bitvector th {
+      border-width: 1px;
+      padding: 1px;
+      border-style: solid;
+      border-color: rgb(221, 221, 221);
+      background-color: white;
+      -moz-border-radius: ;
     }
-  });
 
-  $("#membership").keyup(testMembership);
-});
-</script>
-<script type="text/javascript">
+    table#bitvector td {
+      border-width: 1px;
+      padding: 1px;
+      border-style: solid;
+      border-color: rgb(221, 221, 221);
+      background-color: white;
+      -moz-border-radius: ;
+    }
 
-  var _gaq = _gaq || [];
-  _gaq.push(['_setAccount', 'UA-4514581-2']);
-  _gaq.push(['_trackPageview']);
+    .active {
+      background-color: green !important;
+    }
 
-  (function() {
-    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
-    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
-    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
-  })();
+    .set {
+      background-color: black !important;
+    }
 
-</script>
-</head><body>
-<a href="https://github.com/llimllib/bloomfilter-tutorial"><img style="position: absolute; top: 0; left: 0; border: 0;" src="https://github.blog/wp-content/uploads/2008/12/forkme_left_red_aa0000.png?resize=149%2C149" alt="Fork me on GitHub"></a>
-<div id="content">
+    #content {
+      width: 650px;
+      margin: auto;
+      background-color: #fff;
+      padding: 20px;
+      -webkit-border-radius: 10px;
+      -moz-border-radius: 10px;
+      border-radius: 10px;
+    }
+
+    body {
+      background-color: #d3ddb4;
+      color: black;
+      font-family: Palatino, Georgia, "Times New Roman", Times, serif;
+      font-size: 17px;
+    }
+
+    p {
+      line-height: 1.2em;
+      margin: 1em 0px;
+    }
+
+    sup {
+      font-size: 0.75em;
+      line-height: 0.5em;
+    }
+
+    .insetbox {
+      width: 400px;
+      margin: auto;
+      background-color: #f1f1ce;
+      padding: 10px;
+      -webkit-border-radius: 10px;
+      -moz-border-radius: 10px;
+      border-radius: 10px;
+    }
+
+    #addstring {}
+
+    #testmembership {}
+
+    #ismember {}
+  </style>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.5.2/jquery.min.js"></script>
+  <script src="./murmurhash.js"></script>
+  <script>
+    // The Jenkins 96 bit mix function:
+    // https://web.archive.org/web/20061030103559/http://www.concentric.net/~Ttwang/tech/inthash.htm
+    // stolen from Google Chromium's bloom filter
+    // https://chromium.googlesource.com/chromium/chromium/+/refs/heads/main/chrome/browser/safe_browsing/bloom_filter.cc
+    // thanks dudes!
+    var seed1 = Math.floor(Math.random() * 2e32);
+    var seed2 = Math.floor(Math.random() * 2e32);
+    function hashMix(hash_key) {
+      var a = seed1;
+      var b = seed2;
+      var c = hash_key;
+      console.log(a, b, c);
+
+      a -= (b + c); a ^= (c >> 13);
+      b -= (c + a); b ^= (a << 8);
+      c -= (a + b); c ^= (b >> 13);
+      a -= (b + c); a ^= (c >> 12);
+      b -= (c + a); b ^= (a << 16);
+      c -= (a + b); c ^= (b >> 5);
+      a -= (b + c); a ^= (c >> 3);
+      b -= (c + a); b ^= (a << 10);
+      c -= (a + b); c ^= (b >> 15);
+
+      //XXX: can this even be negative? It was designed to run with uints. Javascript is dumb.
+      return Math.abs(c);
+    }
+
+    // thanks Borgar!
+    // http://stackoverflow.com/questions/1240408/reading-bytes-from-a-javascript-string/1242596#1242596
+    function stringToBytes(str) {
+      var ch, st, re = [];
+      for (var i = 0; i < str.length; i++) {
+        ch = str.charCodeAt(i);  // get char
+        st = [];                 // set up "stack"
+        do {
+          st.push(ch & 0xFF);  // push byte to stack
+          ch = ch >> 8;          // shift value down by 1 byte
+        }
+        while (ch);
+        // add stack contents to result
+        // done because chars have "wrong" endianness
+        re = re.concat(st.reverse());
+      }
+      // return an array of bytes
+      return re;
+    }
+
+    var FNVPRIME = 0x01000193;
+    var FNVINIT = 0x811c9dc5;
+
+    function fnv1s(str) {
+      var bytes = stringToBytes(str);
+      var hash = FNVINIT;
+      for (var i = 0; i < bytes.length; i++) {
+        hash *= FNVPRIME;
+        hash ^= bytes[i];
+      }
+      return Math.abs(hash);
+    }
+
+    nboxes = 15;
+    strings = [];
+
+    function bloom(s) {
+      $(".active").attr("class", "set");
+
+      strings.push(s);
+      $("#yourset").html(strings.join(", "));
+
+      //clear the text input box
+      $("#addtoset").val("");
+
+      var a = fnv1s(s) % nboxes;
+      var b = murmur(s) % nboxes;
+
+      $("#bit[i='" + a + "']").attr("class", "active");
+      $("#bit[i='" + b + "']").attr("class", "active");
+
+      //the probability of a false positive is the number of 1s in the bit vector
+      //divided by the number of bits in the vector to the power of k, the number
+      //of index functions you're using
+      var p = Math.round((Math.pow($(".set, .active").length / nboxes, 2)) * 100);
+      $("#false_pos_prob").html(p + "%");
+    }
+
+    function testMembership(evt) {
+      //clear out "active" cells
+      $(".active").attr("class", "set");
+
+      var s = $("#membership").val();
+
+      var a = fnv1s(s) % nboxes;
+      var b = murmur(s) % nboxes;
+
+      if ($("#bit[i='" + a + "']").attr("class") == "set" &&
+        $("#bit[i='" + b + "']").attr("class") == "set") {
+        $("#ismember").html("maybe!");
+      } else {
+        $("#ismember").html("no");
+      }
+
+      $("#memfnv").html(a)
+      $("#memmurmur").html(b)
+    }
+
+    $(function () {
+      //add the table cells which represent our bloom filter bit array
+      for (var i = 0; i < nboxes; i++) {
+        $("#bits").append('<td id="bit" i="' + i + '" width=20>&nbsp;</td>');
+        $("#labels").append('<td id="label" i="' + i + '" align="center">' + i + '</td>');
+      }
+
+      //handle a click on the "add to bloom filter" button
+      $("#hash").click(function () {
+        var s = $("#addtoset").val();
+        $("#fnv").html(fnv1s(s) % nboxes)
+        $("#murmur").html(murmur(s) % nboxes)
+        bloom(s);
+      });
+
+      // handle enter key on "add to bloom filter" form
+      $('#addtoset').keydown(function (event) {
+        if (event.keyCode == '13') {
+          event.preventDefault();
+          $('#hash').click();
+        }
+      });
+
+      $("#membership").keyup(testMembership);
+    });
+  </script>
+  <script type="text/javascript">
+
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-4514581-2']);
+    _gaq.push(['_trackPageview']);
+
+    (function () {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+
+  </script>
+</head>
+
+<body>
+  <a href="https://github.com/llimllib/bloomfilter-tutorial"><img
+      style="position: absolute; top: 0; left: 0; border: 0;"
+      src="https://github.blog/wp-content/uploads/2008/12/forkme_left_red_aa0000.png?resize=149%2C149"
+      alt="Fork me on GitHub"></a>
+  <div id="content">
     <span style="float: right"><a href="./zh_CN/">简体中文</a></span>
     <h1>Bloom Filters by Example</h1>
 
-    <p>A Bloom filter is a data structure designed to tell you, rapidly and memory-efficiently, whether an element is present in a set.
+    <p>A Bloom filter is a data structure designed to tell you, rapidly and memory-efficiently, whether an element is
+      present in a set.
 
-    <p>The price paid for this efficiency is that a Bloom filter is a <strong>probabilistic data structure</strong>: it tells us that the element either <em>definitely is not</em> in the set or <em>may be</em> in the set.
+    <p>The price paid for this efficiency is that a Bloom filter is a <strong>probabilistic data structure</strong>: it
+      tells us that the element either <em>definitely is not</em> in the set or <em>may be</em> in the set.
 
-    <p>The base data structure of a Bloom filter is a <strong>Bit Vector</strong>. Here's a small one we'll use to demonstrate:
+    <p>The base data structure of a Bloom filter is a <strong>Bit Vector</strong>. Here's a small one we'll use to
+      demonstrate:
 
     <div class="insetbox">
-        <table id="bitvector" border=1 cellpadding=0 cellspacing=0>
-          <tr id="bits"></tr>
-          <tr id="labels"></tr>
-        </table>
+      <table id="bitvector" border=1 cellpadding=0 cellspacing=0>
+        <tr id="bits"></tr>
+        <tr id="labels"></tr>
+      </table>
     </div>
 
-    <p>Each empty cell in that table represents a bit, and the number below it its index. To add an element to the Bloom filter, we simply hash it a few times and set the bits in the bit vector at the index of those hashes to 1.
+    <p>Each empty cell in that table represents a bit, and the number below it its index. To add an element to the Bloom
+      filter, we simply hash it a few times and set the bits in the bit vector at the index of those hashes to 1.
 
-    <p>It's easier to see what that means than explain it, so enter some strings and see how the bit vector changes. Fnv and Murmur are two simple hash functions:
+    <p>It's easier to see what that means than explain it, so enter some strings and see how the bit vector changes. Fnv
+      and Murmur are two simple hash functions:
 
     <div id="addstring" class="insetbox">
-        <p>Enter a string: <input id="addtoset"><input type="submit" id="hash" value="add to bloom filter">
+      <p>Enter a string: <input id="addtoset"><input type="submit" id="hash" value="add to bloom filter">
 
-        <div id="hashes">
-          fnv: <span id="fnv"></span><br>
-          murmur: <span id="murmur"></span>
-        </div>
+      <div id="hashes">
+        fnv: <span id="fnv"></span><br>
+        murmur: <span id="murmur"></span>
+      </div>
 
-        <p>Your set: [<span id="yourset"></span>]
+      <p>Your set: [<span id="yourset"></span>]
     </div>
 
-    <p>When you add a string, you can see that the bits at the index given by the hashes are set to 1. I've used the color green to show the newly added ones, but any colored cell is simply a 1.
+    <p>When you add a string, you can see that the bits at the index given by the hashes are set to 1. I've used the
+      color green to show the newly added ones, but any colored cell is simply a 1.
 
-    <p>To test for membership, you simply hash the string with the same hash functions, then see if those values are set in the bit vector. If they aren't, you know that the element isn't in the set. If they are, you only know that it <em>might</em> be, because another element or some combination of other elements could have set the same bits. Again, let's demonstrate:
+    <p>To test for membership, you simply hash the string with the same hash functions, then see if those values are set
+      in the bit vector. If they aren't, you know that the element isn't in the set. If they are, you only know that it
+      <em>might</em> be, because another element or some combination of other elements could have set the same bits.
+      Again, let's demonstrate:
 
     <div id="testmembership" class="insetbox">
-        <p>Test an element for membership: <input id="membership">
-        <div id="memhashes">
-            fnv: <span id="memfnv"></span><br>
-            murmur: <span id="memmurmur"></span>
-        </div>
+      <p>Test an element for membership: <input id="membership">
+      <div id="memhashes">
+        fnv: <span id="memfnv"></span><br>
+        murmur: <span id="memmurmur"></span>
+      </div>
 
-        <p>Is the element in the set? <span id="ismember">no</span>
+      <p>Is the element in the set? <span id="ismember">no</span>
 
-        <p>Probability of a false positive: <span id="false_pos_prob">0%</span>
+      <p>Probability of a false positive: <span id="false_pos_prob">0%</span>
     </div>
 
     <p>And that's the basics of a bloom filter!
 
     <h2>Advanced Topics</h2>
 
-    <p>Before I write a bit more about Bloom filters, a disclaimer: I've never used them in production. Don't take my word for it. All I intend to do is give you general ideas and pointers to where you can find out more.
+    <p>Before I write a bit more about Bloom filters, a disclaimer: I've never used them in production. Don't take my
+      word for it. All I intend to do is give you general ideas and pointers to where you can find out more.
 
-    <p>In the following text, we will refer to a Bloom filter with <em>k</em> hashes, <em>m</em> bits in the filter, and <em>n</em> elements that have been inserted.
+    <p>In the following text, we will refer to a Bloom filter with <em>k</em> hashes, <em>m</em> bits in the filter, and
+      <em>n</em> elements that have been inserted.
 
     <h3>Hash Functions</h3>
 
-    <p>The hash functions used in a Bloom filter should be <strong><a href="http://en.wiktionary.org/wiki/independent_function">independent</a></strong> and <strong><a href="http://en.wikipedia.org/wiki/Uniform_distribution_(discrete)">uniformly distributed</a></strong>. They should also be as fast as possible (cryptographic hashes such as sha1, though widely used therefore are not very good choices).
+    <p>The hash functions used in a Bloom filter should be <strong><a
+          href="http://en.wiktionary.org/wiki/independent_function">independent</a></strong> and <strong><a
+          href="http://en.wikipedia.org/wiki/Uniform_distribution_(discrete)">uniformly distributed</a></strong>. They
+      should also be as fast as possible (cryptographic hashes such as sha1, though widely used therefore are not very
+      good choices).
 
-    <p>Examples of fast, simple hashes that are independent enough<sup><a href="#footnote3">3</a></sup> include <a href="https://sites.google.com/site/murmurhash/">murmur</a>, <a href="https://github.com/Cyan4973/xxHash">xxHash</a>, the <a href="http://isthe.com/chongo/tech/comp/fnv/">fnv</a> series of hashes, and <a href="https://web.archive.org/web/20061030103559/http://www.concentric.net/~Ttwang/tech/inthash.htm">HashMix</a>.
+    <p>Examples of fast, simple hashes that are independent enough<sup><a href="#footnote3">3</a></sup> include <a
+        href="https://sites.google.com/site/murmurhash/">murmur</a>, <a
+        href="https://github.com/Cyan4973/xxHash">xxHash</a>, the <a
+        href="http://isthe.com/chongo/tech/comp/fnv/">fnv</a> series of hashes, and <a
+        href="https://web.archive.org/web/20061030103559/http://www.concentric.net/~Ttwang/tech/inthash.htm">HashMix</a>.
 
-    <p>To see the difference that a faster-than-cryptographic hash function can make, <a href="https://github.com/bitly/dablooms/pull/19">check out this story</a> of a ~800% speedup when switching a bloom filter implementation from md5 to murmur.
+    <p>To see the difference that a faster-than-cryptographic hash function can make, <a
+        href="https://github.com/bitly/dablooms/pull/19">check out this story</a> of a ~800% speedup when switching a
+      bloom filter implementation from md5 to murmur.
 
     <p>In a short survey of bloom filter implementations:
     <ul>
-        <li>
-          <a href="https://github.com/chromium/chromium/blob/faf8581c2f9cdcb590d3544530c88a00c043461b/components/optimization_guide/core/bloom_filter.cc">Chromium</a> uses <a href="https://github.com/chromium/chromium/blob/faf8581c2f9cdcb590d3544530c88a00c043461b/components/optimization_guide/core/bloom_filter.cc#L17-L26">murmur</a>. (also, <a href="https://web.archive.org/web/20160306232658/http://blog.alexyakunin.com/2010/03/nice-bloom-filter-application.html">here's</a> a short description of how they use bloom filters)
-        </li>
-        <li>
-          <a href="https://plan9.io/sources/plan9/sys/src/cmd/venti/srv/bloom.c">Plan9</a> uses a simple hash as proposed in <a href="http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.152.579&rank=1">Mitzenmacher 2005</a>
-        </li>
-        <li>
-          <a href="https://github.com/sdroege/snippets/blob/master/snippets/bloomfilter.c">Sdroege Bloom filter</a> uses fnv1a (included just because I wanted to show one that uses fnv.)
-        </li>
-        <li>
-          <a href="https://github.com/squid-cache/squid/blob/master/src/store_key_md5.cc">Squid</a> uses MD5
-        </li>
-        <li>
-          <a href="https://github.com/RedisBloom/RedisBloom/blob/be2ef438ddd4343f12d4689eeaed9be21ff491f1/src/cuckoo.h#L38">RedisBloom</a> uses murmur
-        </li>
-        <li>
-          <a href="https://github.com/apache/spark/blob/93251ed77ea1c5d037c64d2292b8760b03c8e181/common/sketch/src/main/java/org/apache/spark/util/sketch/BloomFilterImpl.java#L87">Apache Spark</a> uses murmur
-        </li>
-        <li>
-          <a href="https://github.com/influxdata/influxdb/blob/e20b5e99a6f92614b1b97bda0807ef6c2ab1f7e9/pkg/bloom/bloom.go#L3">influxdb</a> uses xxhash
-        </li>
-        <li>
-          <a href="https://github.com/armon/bloomd/blob/23c19a7f5cbb35d7c3d970bef13bc2bfbe3625f6/src/libbloom/bloom.c#L306">bloomd</a> (a neat project that uses a redis-ish protocol) uses murmur for the first two hashes, <a href="https://burtleburtle.net/bob/hash/spooky.html">SpookyHash</a> for the second two hashes, and a combination of the two for further hashes, as described in <sup><a href="#footnote3">3</a></sup>
-        </li>
-        <li>
-          <a href="https://github.com/hashlookup/fleur">fleur (C)</a>, <a href="https://github.com/DCSO/flor">flor (python)</a>, and <a href="https://github.com/DCSO/bloom">bloom (go)</a> all use fnv
-        </li>
-        <li>
-          <a href="https://github.com/sqlite/sqlite/blob/aa07b36dd52cfb4d7690d4e8917ea0187d44b405/src/vdbe.c#L674">Sqlite</a> added a bloom filter for analytic queries, but I do not understand the hash algorithm. Dr. Hipp <a href="https://sqlite.org/forum/forumpost/bd59962986a5668b">explains the purpose</a> of the filters on the sqlite forum.
-        </li>
-        <li>
-          <a href="https://github.com/facebook/rocksdb/blob/88bc91f3cc2b492b8a45ba2c49650f527df97ad8/util/bloom_impl.h">RocksDB</a> is configurable, but claims <a href="https://github.com/facebook/rocksdb/blob/88bc91f3cc2b492b8a45ba2c49650f527df97ad8/util/hash.cc#L67-L83">in the source</a> that xxh3, a member of the <a href="https://github.com/Cyan4973/xxHash#benchmarks">xxhash family</a> performed best for them
-          <ul>
-            <li>They also link <a href="https://www.khoury.northeastern.edu/home/pete/pub/bloom-filters-verification.pdf">"Bloom Filters in Probabilistic Verification"</a> by Dillinger and Maniolios, but it's pretty far over my head.</li>
-          </ul>
-        </li>
-        <li>
-          <a href="https://github.com/scylladb/scylladb/blob/10a11c2886cffb99f1be06fd5bf1920d5b0953b6/utils/bloom_filter.cc#L75-L84">ScyllaDB</a> uses murmur
-        </li>
+      <li>
+        <a
+          href="https://github.com/chromium/chromium/blob/faf8581c2f9cdcb590d3544530c88a00c043461b/components/optimization_guide/core/bloom_filter.cc">Chromium</a>
+        uses <a
+          href="https://github.com/chromium/chromium/blob/faf8581c2f9cdcb590d3544530c88a00c043461b/components/optimization_guide/core/bloom_filter.cc#L17-L26">murmur</a>.
+        (also, <a
+          href="https://web.archive.org/web/20160306232658/http://blog.alexyakunin.com/2010/03/nice-bloom-filter-application.html">here's</a>
+        a short description of how they use bloom filters)
+      </li>
+      <li>
+        <a href="https://plan9.io/sources/plan9/sys/src/cmd/venti/srv/bloom.c">Plan9</a> uses a simple hash as proposed
+        in <a href="http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.152.579&rank=1">Mitzenmacher 2005</a>
+      </li>
+      <li>
+        <a href="https://github.com/sdroege/snippets/blob/master/snippets/bloomfilter.c">Sdroege Bloom filter</a> uses
+        fnv1a (included just because I wanted to show one that uses fnv.)
+      </li>
+      <li>
+        <a href="https://github.com/squid-cache/squid/blob/master/src/store_key_md5.cc">Squid</a> uses MD5
+      </li>
+      <li>
+        <a
+          href="https://github.com/RedisBloom/RedisBloom/blob/be2ef438ddd4343f12d4689eeaed9be21ff491f1/src/cuckoo.h#L38">RedisBloom</a>
+        uses murmur
+      </li>
+      <li>
+        <a
+          href="https://github.com/apache/spark/blob/93251ed77ea1c5d037c64d2292b8760b03c8e181/common/sketch/src/main/java/org/apache/spark/util/sketch/BloomFilterImpl.java#L87">Apache
+          Spark</a> uses murmur
+      </li>
+      <li>
+        <a
+          href="https://github.com/influxdata/influxdb/blob/e20b5e99a6f92614b1b97bda0807ef6c2ab1f7e9/pkg/bloom/bloom.go#L3">influxdb</a>
+        uses xxhash
+      </li>
+      <li>
+        <a
+          href="https://github.com/armon/bloomd/blob/23c19a7f5cbb35d7c3d970bef13bc2bfbe3625f6/src/libbloom/bloom.c#L306">bloomd</a>
+        (a neat project that uses a redis-ish protocol) uses murmur for the first two hashes, <a
+          href="https://burtleburtle.net/bob/hash/spooky.html">SpookyHash</a> for the second two hashes, and a
+        combination of the two for further hashes, as described in <sup><a href="#footnote3">3</a></sup>
+      </li>
+      <li>
+        <a href="https://github.com/hashlookup/fleur">fleur (C)</a>, <a href="https://github.com/DCSO/flor">flor
+          (python)</a>, and <a href="https://github.com/DCSO/bloom">bloom (go)</a> all use fnv
+      </li>
+      <li>
+        <a
+          href="https://github.com/sqlite/sqlite/blob/aa07b36dd52cfb4d7690d4e8917ea0187d44b405/src/vdbe.c#L674">Sqlite</a>
+        added a bloom filter for analytic queries, but I do not understand the hash algorithm. Dr. Hipp <a
+          href="https://sqlite.org/forum/forumpost/bd59962986a5668b">explains the purpose</a> of the filters on the
+        sqlite forum.
+      </li>
+      <li>
+        <a
+          href="https://github.com/facebook/rocksdb/blob/88bc91f3cc2b492b8a45ba2c49650f527df97ad8/util/bloom_impl.h">RocksDB</a>
+        is configurable, but claims <a
+          href="https://github.com/facebook/rocksdb/blob/88bc91f3cc2b492b8a45ba2c49650f527df97ad8/util/hash.cc#L67-L83">in
+          the source</a> that xxh3, a member of the <a href="https://github.com/Cyan4973/xxHash#benchmarks">xxhash
+          family</a> performed best for them
+        <ul>
+          <li>They also link <a
+              href="https://www.khoury.northeastern.edu/home/pete/pub/bloom-filters-verification.pdf">"Bloom Filters in
+              Probabilistic Verification"</a> by Dillinger and Maniolios, but it's pretty far over my head.</li>
+        </ul>
+      </li>
+      <li>
+        <a
+          href="https://github.com/scylladb/scylladb/blob/10a11c2886cffb99f1be06fd5bf1920d5b0953b6/utils/bloom_filter.cc#L75-L84">ScyllaDB</a>
+        uses murmur
+      </li>
     </ul>
 
     <h3>How big should I make my Bloom filter?</h3>
 
-    <p>It's a nice property of Bloom filters that you can modify the false positive rate of your filter. A larger filter will have less false positives, and a smaller one more.
+    <p>It's a nice property of Bloom filters that you can modify the false positive rate of your filter. A larger filter
+      will have less false positives, and a smaller one more.
 
-    <p>Your false positive rate will be approximately <em>(1-e<sup>-kn/m</sup>)<sup>k</sup></em>, so you can just plug the number <em>n</em> of elements you expect to insert, and try various values of <em>k</em> and <em>m</em> to configure your filter for your application.<sup><a href="#footnote2">2</a></sup>
+    <p>Your false positive rate will be approximately <em>(1-e<sup>-kn/m</sup>)<sup>k</sup></em>, so you can just plug
+      the number <em>n</em> of elements you expect to insert, and try various values of <em>k</em> and <em>m</em> to
+      configure your filter for your application.<sup><a href="#footnote2">2</a></sup>
 
     <p>This leads to an obvious question:
 
     <h3>How many hash functions should I use?</h3>
 
-    <p>The more hash functions you have, the slower your bloom filter, and the quicker it fills up. If you have too few, however, you may suffer too many false positives.
+    <p>The more hash functions you have, the slower your bloom filter, and the quicker it fills up. If you have too few,
+      however, you may suffer too many false positives.
 
-    <p>Since you have to pick <em>k</em> when you create the filter, you'll have to ballpark what range you expect <em>n</em> to be in. Once you have that, you still have to choose a potential <em>m</em> (the number of bits) and <em>k</em> (the number of hash functions).
+    <p>Since you have to pick <em>k</em> when you create the filter, you'll have to ballpark what range you expect
+      <em>n</em> to be in. Once you have that, you still have to choose a potential <em>m</em> (the number of bits) and
+      <em>k</em> (the number of hash functions).
 
-    <p>It seems a difficult optimization problem, but fortunately, given an <em>m</em> and an <em>n</em>, we have a function to choose the optimal value of <em>k</em>: <em>(m/n)ln(2)</em> <sup><a href="#footnote2">2</a>, <a href="#footnote3">3</a></sup>
+    <p>It seems a difficult optimization problem, but fortunately, given an <em>m</em> and an <em>n</em>, we have a
+      function to choose the optimal value of <em>k</em>: <em>(m/n)ln(2)</em> <sup><a href="#footnote2">2</a>, <a
+          href="#footnote3">3</a></sup>
 
     <p>So, to choose the size of a bloom filter, we:
 
-    <p><ol><li>Choose a ballpark value for <em>n</em>
-    <li>Choose a value for <em>m</em>
-    <li>Calculate the optimal value of <em>k</em>
-    <li>Calculate the error rate for our chosen values of <em>n</em>, <em>m</em>, and <em>k</em>. If it's unacceptable, return to step 2 and change m; otherwise we're done.
+    <p>
+    <ol>
+      <li>Choose a ballpark value for <em>n</em>
+      <li>Choose a value for <em>m</em>
+      <li>Calculate the optimal value of <em>k</em>
+      <li>Calculate the error rate for our chosen values of <em>n</em>, <em>m</em>, and <em>k</em>. If it's
+        unacceptable, return to step 2 and change m; otherwise we're done.
     </ol>
 
     <h3>How fast and space efficient is a Bloom filter?</h3>
 
-    <p>Given a Bloom filter with <em>m</em> bits and <em>k</em> hashing functions, both insertion and membership testing are <em>O(k)</em>. That is, each time you want to add an element to the set or check set membership, you just need to run the element through the <em>k</em> hash functions and add it to the set or check those bits.
+    <p>Given a Bloom filter with <em>m</em> bits and <em>k</em> hashing functions, both insertion and membership testing
+      are <em>O(k)</em>. That is, each time you want to add an element to the set or check set membership, you just need
+      to run the element through the <em>k</em> hash functions and add it to the set or check those bits.
 
-    <p>The space advantages are more difficult to sum up; again it depends on the error rate you're willing to tolerate. It also depends on the potential range of the elements to be inserted; if it is very limited, a deterministic bit vector can do better. If you can't even ballpark estimate the number of elements to be inserted, you may be better off with a hash table or a scalable Bloom filter<sup><a href="#footnote4">4</a></sup>.
+    <p>The space advantages are more difficult to sum up; again it depends on the error rate you're willing to tolerate.
+      It also depends on the potential range of the elements to be inserted; if it is very limited, a deterministic bit
+      vector can do better. If you can't even ballpark estimate the number of elements to be inserted, you may be better
+      off with a hash table or a scalable Bloom filter<sup><a href="#footnote4">4</a></sup>.
 
     <h3>What can I use them for?</h3>
 
-    <p>I'll link you to <a href="http://en.wikipedia.org/wiki/Bloom_filter#Examples">wiki</a> instead of copying what they say. <a href="https://archive.org/details/pyvideo_402___handling-ridiculous-amounts-of-data-with-probabilistic-data-structures">C. Titus Brown</a> also has an excellent talk on an application of Bloom filters to bioinformatics.
+    <p>I'll link you to <a href="http://en.wikipedia.org/wiki/Bloom_filter#Examples">wiki</a> instead of copying what
+      they say. <a
+        href="https://archive.org/details/pyvideo_402___handling-ridiculous-amounts-of-data-with-probabilistic-data-structures">C.
+        Titus Brown</a> also has an excellent talk on an application of Bloom filters to bioinformatics.
 
     <h3>References</h3>
 
-    <p><a name="footnote1">1:</span> <a href="http://citeseer.ist.psu.edu/viewdoc/download;jsessionid=6CA79DD1A90B3EFD3D62ACE5523B99E7?doi=10.1.1.127.9672&rep=rep1&type=pdf">Network Applications of Bloom Filters: A Survey</a>, Broder and Mitzenmacher. An excellent overview.
-    <p><a name="footnote2">2:</span> <a href="http://en.wikipedia.org/wiki/Bloom_filter#Probability_of_false_positives">Wikipedia</a>, which has an excellent and comprehensive page on Bloom filters
-    <p><a name="footnote3">3:</span> <a href="http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.152.579&rank=1">Less Hashing, Same Performance</a>, Kirsch and Mitzenmacher
-    <p><a name="footnote4">4:</span> <a href="http://gsd.di.uminho.pt/members/cbm/ps/dbloom.pdf">Scalable Bloom Filters</a>, Almeida et al
+    <p><a name="footnote1">1:</span> <a
+          href="http://citeseer.ist.psu.edu/viewdoc/download;jsessionid=6CA79DD1A90B3EFD3D62ACE5523B99E7?doi=10.1.1.127.9672&rep=rep1&type=pdf">Network
+          Applications of Bloom Filters: A Survey</a>, Broder and Mitzenmacher. An excellent overview.
+        <p><a name="footnote2">2:</span> <a
+              href="http://en.wikipedia.org/wiki/Bloom_filter#Probability_of_false_positives">Wikipedia</a>, which has
+            an excellent and comprehensive page on Bloom filters
+            <p><a name="footnote3">3:</span> <a
+                  href="http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.152.579&rank=1">Less Hashing, Same
+                  Performance</a>, Kirsch and Mitzenmacher
+                <p><a name="footnote4">4:</span> <a href="http://gsd.di.uminho.pt/members/cbm/ps/dbloom.pdf">Scalable
+                      Bloom Filters</a>, Almeida et al
 
-</div>
-</body></html>
+  </div>
+</body>
+
+</html>
